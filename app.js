@@ -38,7 +38,7 @@ async function loadGames() {
   // Determine file to load
   let dataFile = 'nfl.json';
   if (currentLeague === 'cfb') {
-    dataFile = currentCfbGroup === '80' ? 'cfb.json' : `cfb-${currentCfbGroup}.json`;
+    dataFile = (currentCfbGroup === '80' || currentCfbGroup === '81') ? 'cfb.json' : `cfb-${currentCfbGroup}.json`;
   }
 
   try {
@@ -50,6 +50,20 @@ async function loadGames() {
 
     const data = await response.json();
     let events = data.events || [];
+
+    // Helper to extract numerical ranking (1-25)
+    const getRank = (competitor) => {
+      const rank = competitor.curatedRank?.current;
+      return (rank && rank <= 25) ? rank : null;
+    };
+
+    // Filter Top 25 explicitly if selected
+    if (currentLeague === 'cfb' && currentCfbGroup === '81') {
+      events = events.filter(event => {
+        const competitors = event.competitions?.[0]?.competitors || [];
+        return competitors.some(c => getRank(c) !== null);
+      });
+    }
 
     if (events.length === 0) {
       container.innerHTML = `<p style="text-align: center;">No games currently available for this selection.</p>`;
@@ -97,6 +111,13 @@ async function loadGames() {
         statusText = event.status?.type?.detail || 'LIVE';
       }
 
+      // Format team names with rank badges
+      const homeRank = getRank(homeTeam);
+      const awayRank = getRank(awayTeam);
+
+      const homeName = `${homeRank ? `<span style="font-size: 0.75rem; color: #0070f3; font-weight: 800; margin-right: 4px;">(${homeRank})</span>` : ''}${homeTeam.team?.displayName || 'TBD'}`;
+      const awayName = `${awayRank ? `<span style="font-size: 0.75rem; color: #0070f3; font-weight: 800; margin-right: 4px;">(${awayRank})</span>` : ''}${awayTeam.team?.displayName || 'TBD'}`;
+
       const homeDisplay = (finished || inProgress)
         ? `<span class="score" style="font-weight: 800; font-size: 1.1rem; color: #000;">${homeTeam.score ?? 0}</span>`
         : `<span class="record" style="font-size: 0.85rem; color: #666;">${homeTeam.records?.[0]?.summary || ''}</span>`;
@@ -115,7 +136,7 @@ async function loadGames() {
           <div class="team home" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
             <div style="display: flex; align-items: center; gap: 8px;">
               <img src="${homeTeam.team?.logo || ''}" alt="" class="logo" style="width: 28px; height: 28px; object-fit: contain;">
-              <span class="team-name" style="font-weight: 600;">${homeTeam.team?.displayName || 'TBD'}</span>
+              <span class="team-name" style="font-weight: 600;">${homeName}</span>
             </div>
             ${homeDisplay}
           </div>
@@ -123,7 +144,7 @@ async function loadGames() {
           <div class="team away" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
             <div style="display: flex; align-items: center; gap: 8px;">
               <img src="${awayTeam.team?.logo || ''}" alt="" class="logo" style="width: 28px; height: 28px; object-fit: contain;">
-              <span class="team-name" style="font-weight: 600;">${awayTeam.team?.displayName || 'TBD'}</span>
+              <span class="team-name" style="font-weight: 600;">${awayName}</span>
             </div>
             ${awayDisplay}
           </div>
