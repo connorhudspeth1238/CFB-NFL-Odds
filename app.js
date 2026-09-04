@@ -3,25 +3,26 @@ let currentLeague = 'cfb';
 function switchLeague(league) {
   currentLeague = league;
   
-  // Update Tab Active States
+  // Toggle Active Button Styles
   document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
   const activeBtn = document.getElementById(`tab-${league}`);
   if (activeBtn) activeBtn.classList.add('active');
 
-  // Update Header Title
+  // Update Page Title
   const titleEl = document.getElementById('page-title');
   if (titleEl) {
-    titleEl.innerText = league === 'cfb' 
-      ? 'College Football Scoreboard' 
-      : 'NFL Scoreboard';
+    titleEl.innerText = league === 'cfb' ? 'College Football Scoreboard' : 'NFL Scoreboard';
   }
 
+  // Fetch New Data
   loadGames();
 }
 
 async function loadGames() {
   const container = document.getElementById('scoreboard-grid');
-  container.innerHTML = '<p style="text-align: center;">Loading games...</p>';
+  if (!container) return;
+
+  container.innerHTML = `<p style="text-align: center; font-size: 1.1rem; color: #666;">Loading ${currentLeague.toUpperCase()} games...</p>`;
 
   const dataFile = currentLeague === 'cfb' ? 'cfb.json' : 'nfl.json';
 
@@ -36,7 +37,7 @@ async function loadGames() {
     let events = data.events || [];
 
     if (events.length === 0) {
-      container.innerHTML = `<p style="text-align: center;">No ${currentLeague.toUpperCase()} games scheduled for this week.</p>`;
+      container.innerHTML = `<p style="text-align: center;">No ${currentLeague.toUpperCase()} games currently available.</p>`;
       return;
     }
 
@@ -83,36 +84,36 @@ async function loadGames() {
 
       const homeDisplay = (finished || inProgress)
         ? `<span class="score" style="font-weight: 800; font-size: 1.1rem; color: #000;">${homeTeam.score ?? 0}</span>`
-        : `<span class="record">${homeTeam.records?.[0]?.summary || ''}</span>`;
+        : `<span class="record" style="font-size: 0.85rem; color: #666;">${homeTeam.records?.[0]?.summary || ''}</span>`;
 
       const awayDisplay = (finished || inProgress)
         ? `<span class="score" style="font-weight: 800; font-size: 1.1rem; color: #000;">${awayTeam.score ?? 0}</span>`
-        : `<span class="record">${awayTeam.records?.[0]?.summary || ''}</span>`;
+        : `<span class="record" style="font-size: 0.85rem; color: #666;">${awayTeam.records?.[0]?.summary || ''}</span>`;
 
       return `
-        <div class="game-card ${finished ? 'completed-card' : ''}" style="${finished ? 'opacity: 0.8; background-color: #fafafa;' : ''}">
-          <div class="time-tv">
-            <span class="time" style="${finished ? 'color: #d97706; font-weight: 700;' : ''}">${statusText}</span>
-            <span class="tv-badge">${broadcast}</span>
+        <div class="game-card ${finished ? 'completed-card' : ''}" style="border: 1px solid #e5e7eb; padding: 12px; margin-bottom: 12px; border-radius: 8px; ${finished ? 'opacity: 0.8; background-color: #fafafa;' : 'background-color: #fff;'}">
+          <div class="time-tv" style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.85rem;">
+            <span class="time" style="${finished ? 'color: #d97706; font-weight: 700;' : 'color: #374151;'}">${statusText}</span>
+            <span class="tv-badge" style="background: #e0e7ff; color: #3730a3; padding: 2px 6px; border-radius: 4px;">${broadcast}</span>
           </div>
           
-          <div class="team home">
-            <img src="${homeTeam.team?.logo || ''}" alt="${homeTeam.team?.displayName || 'Home'}" class="logo" style="width: 32px; height: 32px; object-fit: contain;">
-            <div class="team-details">
-              <span class="team-name">${homeTeam.team?.displayName || 'TBD'}</span>
+          <div class="team home" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <img src="${homeTeam.team?.logo || ''}" alt="" class="logo" style="width: 28px; height: 28px; object-fit: contain;">
+              <span class="team-name" style="font-weight: 600;">${homeTeam.team?.displayName || 'TBD'}</span>
             </div>
             ${homeDisplay}
           </div>
 
-          <div class="team away">
-            <img src="${awayTeam.team?.logo || ''}" alt="${awayTeam.team?.displayName || 'Away'}" class="logo" style="width: 32px; height: 32px; object-fit: contain;">
-            <div class="team-details">
-              <span class="team-name">${awayTeam.team?.displayName || 'TBD'}</span>
+          <div class="team away" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <img src="${awayTeam.team?.logo || ''}" alt="" class="logo" style="width: 28px; height: 28px; object-fit: contain;">
+              <span class="team-name" style="font-weight: 600;">${awayTeam.team?.displayName || 'TBD'}</span>
             </div>
             ${awayDisplay}
           </div>
 
-          <div class="odds-bar">
+          <div class="odds-bar" style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #6b7280; border-top: 1px solid #f3f4f6; padding-top: 6px;">
             <span>${finished ? 'Final Score' : `Odds: ${spread}`}</span>
             <span>${finished ? '' : overUnder}</span>
           </div>
@@ -126,4 +127,5 @@ async function loadGames() {
   }
 }
 
-loadGames();
+// Initial Load
+document.addEventListener('DOMContentLoaded', loadGames);
