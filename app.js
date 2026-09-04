@@ -37,7 +37,8 @@ async function loadGames() {
 
   let dataFile = 'nfl.json';
   if (currentLeague === 'cfb') {
-    dataFile = currentCfbGroup === '80' ? 'cfb.json' : `cfb-${currentCfbGroup}.json`;
+    // If Top 25 (81) is selected, fetch the full cfb.json payload to avoid ESPN's endpoint truncation
+    dataFile = (currentCfbGroup === '80' || currentCfbGroup === '81') ? 'cfb.json' : `cfb-${currentCfbGroup}.json`;
   }
 
   try {
@@ -50,7 +51,7 @@ async function loadGames() {
     const data = await response.json();
     let events = data.events || [];
 
-    // Helper: Extract valid 1-25 rank from team JSON structure
+    // Helper: Extract valid 1-25 rank from all possible ESPN schema paths
     const getRank = (competitor) => {
       if (!competitor) return null;
       
