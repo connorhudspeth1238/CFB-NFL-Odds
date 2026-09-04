@@ -1,5 +1,5 @@
 let currentLeague = 'cfb';
-let currentCfbGroup = '80'; // Default to All FBS Scores
+let currentCfbGroup = '81'; // Default to Top 25
 
 function switchLeague(league) {
   currentLeague = league;
@@ -52,6 +52,29 @@ async function loadGames() {
     return (!isNaN(num) && num > 0 && num <= 25) ? num : null;
   };
 
+  // Helper: Safely extract conference/group IDs from ESPN team payload
+  const hasConferenceId = (competitor, targetGroupId) => {
+    if (!competitor || !competitor.team) return false;
+    const team = competitor.team;
+    const target = String(targetGroupId);
+
+    // Check primary conferenceId property
+    if (team.conferenceId && String(team.conferenceId) === target) return true;
+
+    // Check groups object or array
+    if (team.groups) {
+      if (Array.isArray(team.groups)) {
+        return team.groups.some(g => String(g.id || g) === target);
+      } else if (typeof team.groups === 'object') {
+        if (String(team.groups.id) === target) return true;
+      } else if (String(team.groups) === target) {
+        return true;
+      }
+    }
+
+    return false;
+  };
+
   try {
     const dataFile = currentLeague === 'nfl' ? 'nfl.json' : 'cfb.json';
     const response = await fetch(`${dataFile}?v=${new Date().getTime()}`);
@@ -61,22 +84,19 @@ async function loadGames() {
       events = data.events || [];
     }
 
-    // Client-side filtering for CFB groups/conferences
+    // Filter CFB Games
     if (currentLeague === 'cfb') {
       if (currentCfbGroup === '81') {
-        // TOP 25: Matchups featuring at least one ranked team
+        // TOP 25 FILTER: Keep games with at least one team ranked 1-25
         events = events.filter(event => {
           const competitors = event.competitions?.[0]?.competitors || [];
           return competitors.some(c => getRank(c) !== null);
         });
       } else if (currentCfbGroup !== '80') {
-        // SPECIFIC CONFERENCES (e.g. SEC=8, ACC=1, Big Ten=4, Big 12=12, Pac-12=9, etc.)
+        // SPECIFIC CONFERENCE FILTER: Keep game if home OR away team belongs to conference
         events = events.filter(event => {
           const competitors = event.competitions?.[0]?.competitors || [];
-          return competitors.some(c => {
-            const conferenceId = c.team?.conferenceId || c.team?.groups?.id;
-            return String(conferenceId) === String(currentCfbGroup);
-          });
+          return competitors.some(c => hasConferenceId(c, currentCfbGroup));
         });
       }
     }
