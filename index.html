@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Football Odds & TV Schedule</title>
-  <link rel="stylesheet" href="style.css?v=2000">
+  <link rel="stylesheet" href="style.css?v=3000">
 </head>
 <body>
 
@@ -13,13 +13,35 @@
     <button onclick="window.print()">Print / Save PDF</button>
   </header>
 
-  <div class="tabs-container no-print">
-    <button id="tab-cfb" class="tab-btn active" onclick="switchLeague('cfb')">College Football</button>
-    <button id="tab-nfl" class="tab-btn" onclick="switchLeague('nfl')">NFL</button>
+  <!-- Navigation Tabs & Group Filter -->
+  <div class="controls-container no-print" style="display: flex; gap: 15px; align-items: center; justify-content: center; margin-bottom: 20px; flex-wrap: wrap;">
+    <div class="tabs-container" style="display: flex; gap: 10px;">
+      <button id="tab-cfb" class="tab-btn active" onclick="switchLeague('cfb')">College Football</button>
+      <button id="tab-nfl" class="tab-btn" onclick="switchLeague('nfl')">NFL</button>
+    </div>
+
+    <!-- Group Filter Dropdown (Hidden on NFL tab) -->
+    <div id="cfb-filter-container">
+      <select id="group-select" onchange="changeCfbGroup(this.value)" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #0070f3; font-weight: 600; color: #0070f3; background: #fff; cursor: pointer;">
+        <option value="80" selected>All FBS Scores</option>
+        <option value="81">Top 25</option>
+        <option value="1">ACC</option>
+        <option value="4">Big 12</option>
+        <option value="5">Big Ten</option>
+        <option value="9">SEC</option>
+        <option value="12">AAC</option>
+        <option value="15">C-USA</option>
+        <option value="17">MAC</option>
+        <option value="18">MWC</option>
+        <option value="37">Sun Belt</option>
+        <option value="20">FBS Independents</option>
+      </select>
+    </div>
   </div>
 
+  <!-- Scoreboard Grid -->
   <div id="scoreboard-grid" class="scoreboard-grid"></div>
 
-  <script src="app.js?v=2000"></script>
+  <script src="app.js?v=3000"></script>
 </body>
 </html>
