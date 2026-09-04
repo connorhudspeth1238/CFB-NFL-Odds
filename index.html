@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Football Odds & TV Schedule</title>
-  <link rel="stylesheet" href="style.css?v=3">
+  <link rel="stylesheet" href="style.css?v=2000">
 </head>
 <body>
 
@@ -13,15 +13,13 @@
     <button onclick="window.print()">Print / Save PDF</button>
   </header>
 
-  <!-- Navigation Tabs -->
   <div class="tabs-container no-print">
-    <button class="tab-btn active" id="tab-cfb" onclick="switchLeague('cfb')">College Football</button>
-    <button class="tab-btn" id="tab-nfl" onclick="switchLeague('nfl')">NFL</button>
+    <button id="tab-cfb" class="tab-btn active" onclick="switchLeague('cfb')">College Football</button>
+    <button id="tab-nfl" class="tab-btn" onclick="switchLeague('nfl')">NFL</button>
   </div>
 
-  <!-- Scoreboard Grid -->
   <div id="scoreboard-grid" class="scoreboard-grid"></div>
 
-  <script src="app.js?v=999"></script>
+  <script src="app.js?v=2000"></script>
 </body>
 </html>
