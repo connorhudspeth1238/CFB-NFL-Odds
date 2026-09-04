@@ -93,19 +93,10 @@ async function loadGames() {
   };
 
   try {
-    let fetchUrl = '';
-    if (currentLeague === 'nfl') {
-      fetchUrl = 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard';
-    } else {
-      let groupParam = '';
-      if (currentCfbGroup === '81') {
-        groupParam = '&groups=80';
-      } else if (currentCfbGroup !== '80') {
-        groupParam = `&groups=${currentCfbGroup}`;
-      }
-      
-      fetchUrl = `https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?limit=300${groupParam}&v=${new Date().getTime()}`;
-    }
+    // Fetch live data directly from ESPN public endpoints
+    let fetchUrl = currentLeague === 'nfl' 
+      ? 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard' 
+      : `https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?limit=150&v=${new Date().getTime()}`;
 
     const response = await fetch(fetchUrl);
     
@@ -190,12 +181,12 @@ async function loadGames() {
       const awayName = `${awayRank ? `<span style="font-size: 0.85rem; color: #0070f3; font-weight: 800; margin-right: 4px;">(${awayRank})</span>` : ''}${awayTeam.team?.displayName || 'TBD'}`;
 
       const homeDisplay = (finished || inProgress)
-        ? `<span class="score">${homeTeam.score ?? 0}</span>`
-        : `<span class="record">${homeTeam.records?.[0]?.summary || ''}</span>`;
+        ? `<span class="score" style="font-weight: 800; font-size: 1.1rem; color: #000;">${homeTeam.score ?? 0}</span>`
+        : `<span class="record" style="font-size: 0.85rem; color: #666;">${homeTeam.records?.[0]?.summary || ''}</span>`;
 
       const awayDisplay = (finished || inProgress)
-        ? `<span class="score">${awayTeam.score ?? 0}</span>`
-        : `<span class="record">${awayTeam.records?.[0]?.summary || ''}</span>`;
+        ? `<span class="score" style="font-weight: 800; font-size: 1.1rem; color: #000;">${awayTeam.score ?? 0}</span>`
+        : `<span class="record" style="font-size: 0.85rem; color: #666;">${awayTeam.records?.[0]?.summary || ''}</span>`;
 
       return `
         <div class="game-card ${finished ? 'completed-card' : ''}">
@@ -205,19 +196,19 @@ async function loadGames() {
           </div>
           
           <div class="team home" style="margin-bottom: 6px;">
-            <div style="display: flex; align-items: center; gap: 8px; overflow: hidden; margin-right: 8px;">
-              <img src="${homeTeam.team?.logo || ''}" alt="" class="logo" style="flex-shrink: 0;">
-              <span class="team-name" style="overflow: hidden; text-overflow: ellipsis;">${homeName}</span>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <img src="${homeTeam.team?.logo || ''}" alt="" class="logo">
+              <span class="team-name">${homeName}</span>
             </div>
-            <div class="score-record-container">${homeDisplay}</div>
+            ${homeDisplay}
           </div>
 
           <div class="team away" style="margin-bottom: 8px;">
-            <div style="display: flex; align-items: center; gap: 8px; overflow: hidden; margin-right: 8px;">
-              <img src="${awayTeam.team?.logo || ''}" alt="" class="logo" style="flex-shrink: 0;">
-              <span class="team-name" style="overflow: hidden; text-overflow: ellipsis;">${awayName}</span>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <img src="${awayTeam.team?.logo || ''}" alt="" class="logo">
+              <span class="team-name">${awayName}</span>
             </div>
-            <div class="score-record-container">${awayDisplay}</div>
+            ${awayDisplay}
           </div>
 
           <div class="odds-bar">
