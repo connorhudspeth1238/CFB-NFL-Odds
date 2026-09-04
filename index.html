@@ -3,45 +3,200 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Football Odds & TV Schedule</title>
-  <link rel="stylesheet" href="style.css?v=3000">
+  <title>Sports Scoreboard</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: #f3f4f6;
+      color: #111827;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .league-toggle {
+      display: flex;
+      gap: 8px;
+      background: #e5e7eb;
+      padding: 4px;
+      border-radius: 8px;
+    }
+
+    .tab-btn {
+      padding: 8px 16px;
+      border: none;
+      background: transparent;
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: #4b5563;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn.active {
+      background: #0070f3;
+      color: #ffffff;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .filter-container {
+      margin-top: 4px;
+    }
+
+    select {
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid #d1d5db;
+      background-color: #ffffff;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #374151;
+      outline: none;
+      cursor: pointer;
+    }
+
+    select:focus {
+      border-color: #0070f3;
+      box-shadow: 0 0 0 2px rgba(0, 112, 243, 0.2);
+    }
+
+    .scoreboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+    }
+
+    .game-card {
+      border: 1px solid #e5e7eb;
+      padding: 14px;
+      border-radius: 8px;
+      background-color: #ffffff;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .game-card.completed-card {
+      opacity: 0.85;
+      background-color: #fafafa;
+    }
+
+    .time-tv {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      font-size: 0.85rem;
+    }
+
+    .time {
+      font-weight: 600;
+      color: #374151;
+    }
+
+    .tv-badge {
+      background: #e0e7ff;
+      color: #3730a3;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .team {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .team-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+    }
+
+    .team-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .score {
+      font-weight: 800;
+      font-size: 1.1rem;
+      color: #000;
+    }
+
+    .record {
+      font-size: 0.85rem;
+      color: #6b7280;
+    }
+
+    .odds-bar {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: #6b7280;
+      border-top: 1px solid #f3f4f6;
+      padding-top: 8px;
+      margin-top: 8px;
+    }
+  </style>
 </head>
 <body>
 
-  <header class="no-print">
-    <h1 id="page-title">College Football Scoreboard</h1>
-    <button onclick="window.print()">Print / Save PDF</button>
-  </header>
+  <div class="container">
+    <header>
+      <div class="league-toggle">
+        <button id="tab-cfb" class="tab-btn active" onclick="switchLeague('cfb')">College Football</button>
+        <button id="tab-nfl" class="tab-btn" onclick="switchLeague('nfl')">NFL</button>
+      </div>
 
-  <!-- Navigation Tabs & Group Filter -->
-  <div class="controls-container no-print" style="display: flex; gap: 15px; align-items: center; justify-content: center; margin-bottom: 20px; flex-wrap: wrap;">
-    <div class="tabs-container" style="display: flex; gap: 10px;">
-      <button id="tab-cfb" class="tab-btn active" onclick="switchLeague('cfb')">College Football</button>
-      <button id="tab-nfl" class="tab-btn" onclick="switchLeague('nfl')">NFL</button>
-    </div>
+      <div id="cfb-filter-container" class="filter-container">
+        <select id="cfb-group-select" onchange="changeCfbGroup(this.value)">
+          <option value="80">All FBS</option>
+          <option value="81" selected>Top 25</option>
+          <option value="8">SEC</option>
+          <option value="4">Big Ten</option>
+          <option value="12">Big 12</option>
+          <option value="1">ACC</option>
+          <option value="9">Pac-12</option>
+          <option value="15">AAC</option>
+          <option value="17">Mountain West</option>
+          <option value="18">Sun Belt</option>
+          <option value="37">C-USA</option>
+          <option value="20">MAC</option>
+        </select>
+      </div>
+    </header>
 
-    <!-- Group Filter Dropdown (Hidden on NFL tab) -->
-    <div id="cfb-filter-container">
-      <select id="group-select" onchange="changeCfbGroup(this.value)" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #0070f3; font-weight: 600; color: #0070f3; background: #fff; cursor: pointer;">
-        <option value="80" selected>All FBS Scores</option>
-        <option value="81">Top 25</option>
-        <option value="1">ACC</option>
-        <option value="4">Big 12</option>
-        <option value="5">Big Ten</option>
-        <option value="9">SEC</option>
-        <option value="12">AAC</option>
-        <option value="15">C-USA</option>
-        <option value="17">MAC</option>
-        <option value="18">MWC</option>
-        <option value="37">Sun Belt</option>
-        <option value="20">FBS Independents</option>
-      </select>
-    </div>
+    <main id="scoreboard-grid" class="scoreboard-grid">
+      <!-- Games will render dynamically here -->
+    </main>
   </div>
 
-  <!-- Scoreboard Grid -->
-  <div id="scoreboard-grid" class="scoreboard-grid"></div>
-
-  <script src="app.js?v=5000"></script>
+  <script src="app.js"></script>
 </body>
 </html>
