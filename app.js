@@ -1,54 +1,65 @@
-// Replace with your actual free API key from College Football Data
-const API_KEY = 'dTZayehggX7ZRMmQCtSjpD8hQDuwwxzMIK+5PInVE2efX3mdNCuCwDmt/jG9pcJC';
-
 async function loadGames() {
   const container = document.getElementById('scoreboard-grid');
 
   try {
-    // 1. Fetch data from the API
-    const response = await fetch('https://api.collegefootballdata.com/lines?year=2026&week=1', {
-      headers: { 
-        'Authorization': `Bearer ${API_KEY}`,
-        'Accept': 'application/json'
-      }
-    });
-
+    // ESPN public endpoint for FBS college football odds & schedule
+    const response = await fetch('https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard');
+    
     if (!response.ok) {
-      throw new Error(`API Error: ${response.status}`);
+      throw new Error(`HTTP Error: ${response.status}`);
     }
 
-    const games = await response.json();
+    const data = await response.json();
+    const events = data.events || [];
 
-    // 2. Loop through each game and construct card markup
-    container.innerHTML = games.map(game => {
-      // Pick the main spread/provider (or default fallback)
-      const line = game.lines && game.lines.length > 0 ? game.lines[0] : null;
-      const formattedSpread = line ? line.formattedSpread : 'N/A';
-      const overUnder = line ? `O/U ${line.overUnder}` : '';
+    if (events.length === 0) {
+      container.innerHTML = '<p>No games found for this week.</p>';
+      return;
+    }
+
+    container.innerHTML = events.map(event => {
+      const competition = event.competitions[0];
+      const homeTeam = competition.competitors.find(c => c.homeAway === 'home');
+      const awayTeam = competition.competitors.find(c => c.homeAway === 'away');
+      
+      // Extract TV broadcast name
+      const broadcast = competition.broadcasts?.[0]?.names?.[0] || 'TV TBD';
+      
+      // Extract betting details
+      const odds = competition.odds?.[0];
+      const spread = odds?.details || 'N/A';
+      const overUnder = odds?.overUnder ? `O/U ${odds.overUnder}` : '';
+
+      // Format game time
+      const gameDate = new Date(event.date).toLocaleString([], {
+        weekday: 'short', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit'
+      });
 
       return `
         <div class="game-card">
           <div class="time-tv">
-            <span class="time">${game.startDate ? new Date(game.startDate).toLocaleString([], {weekday: 'short', month: 'numeric', day: 'numeric', hour: '2-digit', minute:'2-digit'}) : 'TBD'}</span>
-            <span class="tv-badge">${game.outlet || 'TV TBD'}</span>
+            <span class="time">${gameDate}</span>
+            <span class="tv-badge">${broadcast}</span>
           </div>
           
           <div class="team home">
-            <img src="${game.homeTeamLogo || 'https://a.espncdn.com/i/teamlogos/ncaa/500/default.png'}" alt="${game.homeTeam}" class="logo">
+            <img src="${homeTeam.team.logo}" alt="${homeTeam.team.displayName}" class="logo">
             <div class="team-details">
-              <span class="team-name">${game.homeTeam}</span>
+              <span class="team-name">${homeTeam.team.displayName}</span>
             </div>
+            <span class="record">${homeTeam.records?.[0]?.summary || ''}</span>
           </div>
 
           <div class="team away">
-            <img src="${game.awayTeamLogo || 'https://a.espncdn.com/i/teamlogos/ncaa/500/default.png'}" alt="${game.awayTeam}" class="logo">
+            <img src="${awayTeam.team.logo}" alt="${awayTeam.team.displayName}" class="logo">
             <div class="team-details">
-              <span class="team-name">${game.awayTeam}</span>
+              <span class="team-name">${awayTeam.team.displayName}</span>
             </div>
+            <span class="record">${awayTeam.records?.[0]?.summary || ''}</span>
           </div>
 
           <div class="odds-bar">
-            <span>Odds: ${formattedSpread}</span>
+            <span>Odds: ${spread}</span>
             <span>${overUnder}</span>
           </div>
         </div>
@@ -57,9 +68,8 @@ async function loadGames() {
 
   } catch (error) {
     console.error('Failed to load scoreboard data:', error);
-    container.innerHTML = `<p style="color: red; text-align: center;">Unable to load game data. Check your API key or connection.</p>`;
+    container.innerHTML = `<p style="color: red; text-align: center;">Unable to load game data. Check browser console for details.</p>`;
   }
 }
 
-// Execute the fetch function on page load
 loadGames();
