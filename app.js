@@ -51,12 +51,7 @@ async function loadGames() {
     const data = await response.json();
     let events = data.events || [];
 
-    if (events.length === 0) {
-      container.innerHTML = `<p style="text-align: center;">No games currently available for this selection.</p>`;
-      return;
-    }
-
-    // Comprehensive rank parser across ESPN API structure variations
+    // Helper to extract numerical ranking (1-25)
     const getRank = (competitor) => {
       if (!competitor) return null;
       let rank = competitor.curatedRank?.current 
@@ -67,6 +62,21 @@ async function loadGames() {
       const num = parseInt(rank, 10);
       return (!isNaN(num) && num > 0 && num <= 25) ? num : null;
     };
+
+    // STRICT TOP 25 FILTER: Remove games where NEITHER team is ranked 1-25
+    if (currentLeague === 'cfb' && currentCfbGroup === '81') {
+      events = events.filter(event => {
+        const competitors = event.competitions?.[0]?.competitors || [];
+        const homeTeam = competitors.find(c => c.homeAway === 'home');
+        const awayTeam = competitors.find(c => c.homeAway === 'away');
+        return getRank(homeTeam) !== null || getRank(awayTeam) !== null;
+      });
+    }
+
+    if (events.length === 0) {
+      container.innerHTML = `<p style="text-align: center;">No games currently available for this selection.</p>`;
+      return;
+    }
 
     const isGameFinished = (event) => {
       const state = event.status?.type?.state;
