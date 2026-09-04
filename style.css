@@ -1,0 +1,24 @@
+@media print {
+  body {
+    background: #fff;
+    font-size: 10pt;
+  }
+  
+  /* Force a 2-column print layout */
+  .scoreboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .game-card {
+    border: 1px solid #ccc;
+    page-break-inside: avoid;
+    padding: 6px;
+  }
+
+  /* Hide UI elements like buttons when printing */
+  .no-print {
+    display: none;
+  }
+}
