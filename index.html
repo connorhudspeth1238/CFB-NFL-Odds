@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CFB & NFL Odds</title>
+  <title>Sports Scoreboard</title>
   <style>
     * {
       box-sizing: border-box;
@@ -126,12 +126,6 @@
       margin-bottom: 8px;
     }
 
-    .team-info {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
     .logo {
       width: 28px;
       height: 28px;
@@ -149,9 +143,18 @@
       color: #000;
     }
 
+    .score-record-container {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      white-space: nowrap;
+      min-width: 50px;
+    }
+
     .record {
       font-size: 0.85rem;
       color: #6b7280;
+      white-space: nowrap;
     }
 
     .odds-bar {
