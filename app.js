@@ -1,5 +1,5 @@
 // Replace with your actual free API key from College Football Data
-const API_KEY = 'YOUR_CFBD_API_KEY';
+const API_KEY = 'dTZayehggX7ZRMmQCtSjpD8hQDuwwxzMIK+5PInVE2efX3mdNCuCwDmt/jG9pcJC';
 
 async function loadGames() {
   const container = document.getElementById('scoreboard-grid');
