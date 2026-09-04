@@ -1,7 +1,7 @@
 let currentLeague = 'cfb';
 let currentCfbGroup = '81'; // Default to Top 25
 
-// Clean conference dictionary
+// Clean, keyword-based conference dictionary mapped to core school identifiers
 const conferenceTeams = {
   '8': [ // SEC
     'Alabama', 'Arkansas', 'Auburn', 'Florida', 'Georgia', 'Kentucky', 
@@ -107,7 +107,7 @@ async function loadGames() {
       events = data.events || [];
     }
 
-    // Filter events using strict word-boundary regular expression matching
+    // Filter events based on selected view using strict dictionary matching
     if (currentLeague === 'cfb') {
       if (currentCfbGroup === '81') {
         events = events.filter(event => {
@@ -119,17 +119,13 @@ async function loadGames() {
         events = events.filter(event => {
           const competitors = event.competitions?.[0]?.competitors || [];
           return competitors.some(c => {
+            const teamName = (c.team?.name || '').toLowerCase();
             const displayName = (c.team?.displayName || '').toLowerCase();
             const shortDisplayName = (c.team?.shortDisplayName || '').toLowerCase();
-            const name = (c.team?.name || '').toLowerCase();
             
             return allowedTeams.some(t => {
               const target = t.toLowerCase();
-              const escapedTarget = target.replace('.', '\\.');
-              // Word boundary check prevents substring overlap (e.g. "Houston" won't match "Sam Houston")
-              const regex = new RegExp(`(^|[^a-z])${escapedTarget}([^a-z]|$)`, 'i');
-              
-              return regex.test(displayName) || regex.test(shortDisplayName) || regex.test(name);
+              return teamName === target || displayName === target || shortDisplayName === target;
             });
           });
         });
