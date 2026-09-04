@@ -35,7 +35,7 @@ async function loadGames() {
 
   container.innerHTML = `<p style="text-align: center; font-size: 1.1rem; color: #666;">Loading ${currentLeague.toUpperCase()} games...</p>`;
 
-  // Load target group file
+  // Load target group file with timestamp cache-buster
   let dataFile = 'nfl.json';
   if (currentLeague === 'cfb') {
     dataFile = currentCfbGroup === '80' ? 'cfb.json' : `cfb-${currentCfbGroup}.json`;
@@ -51,26 +51,35 @@ async function loadGames() {
     const data = await response.json();
     let events = data.events || [];
 
-    // Helper to extract numerical ranking (1-25)
+    // Enhanced Rank Parser: Checks all ESPN schema locations for rank
     const getRank = (competitor) => {
       if (!competitor) return null;
+      
       let rank = competitor.curatedRank?.current 
               || competitor.curatedRank 
               || competitor.ranks?.[0]?.current 
+              || competitor.team?.ranks?.[0]?.current
               || competitor.rank;
-      
+
+      if (typeof rank === 'object' && rank !== null) {
+        rank = rank.current || rank.rank;
+      }
+
       const num = parseInt(rank, 10);
       return (!isNaN(num) && num > 0 && num <= 25) ? num : null;
     };
 
-    // STRICT TOP 25 FILTER: Remove games where NEITHER team is ranked 1-25
+    // If Top 25 selected, ensure we keep games if EITHER team is ranked OR if loaded via cfb-81.json
     if (currentLeague === 'cfb' && currentCfbGroup === '81') {
-      events = events.filter(event => {
+      const rankedEvents = events.filter(event => {
         const competitors = event.competitions?.[0]?.competitors || [];
-        const homeTeam = competitors.find(c => c.homeAway === 'home');
-        const awayTeam = competitors.find(c => c.homeAway === 'away');
-        return getRank(homeTeam) !== null || getRank(awayTeam) !== null;
+        return competitors.some(c => getRank(c) !== null);
       });
+
+      // Fallback: If strict ranking filter drops everything, display the full feed from cfb-81.json
+      if (rankedEvents.length > 0) {
+        events = rankedEvents;
+      }
     }
 
     if (events.length === 0) {
