@@ -1,6 +1,48 @@
 let currentLeague = 'cfb';
 let currentCfbGroup = '81'; // Default to Top 25
 
+// Clean, keyword-based conference dictionary mapped to core school identifiers
+const conferenceTeams = {
+  '8': [ // SEC
+    'Alabama', 'Arkansas', 'Auburn', 'Florida', 'Georgia', 'Kentucky', 
+    'LSU', 'Mississippi State', 'Mississippi St.', 'Mississippi', 'Missouri', 
+    'Oklahoma', 'Ole Miss', 'South Carolina', 'Tennessee', 'Texas', 'Texas A&M', 'Vanderbilt'
+  ],
+  '4': [ // Big Ten
+    'Illinois', 'Indiana', 'Iowa', 'Maryland', 'Michigan State', 'Michigan St.', 
+    'Michigan', 'Minnesota', 'Nebraska', 'Northwestern', 'Ohio State', 'Ohio St.', 
+    'Oregon', 'Penn State', 'Penn St.', 'Purdue', 'Rutgers', 'UCLA', 'USC', 'Washington', 'Wisconsin'
+  ],
+  '12': [ // Big 12
+    'Arizona State', 'Arizona St.', 'Arizona', 'Baylor', 'BYU', 'UCF', 'Cincinnati', 
+    'Colorado', 'Houston', 'Iowa State', 'Iowa St.', 'Kansas State', 'Kansas St.', 'Kansas', 
+    'Oklahoma State', 'Oklahoma St.', 'TCU', 'Texas Tech', 'Utah', 'West Virginia'
+  ],
+  '1': [ // ACC
+    'Boston College', 'California', 'Clemson', 'Duke', 'Florida State', 'Florida St.', 
+    'Georgia Tech', 'Louisville', 'Miami', 'North Carolina', 'NC State', 'N.C. State', 
+    'Pittsburgh', 'SMU', 'Stanford', 'Syracuse', 'Virginia Tech', 'Virginia', 'Wake Forest'
+  ],
+  '15': [ // AAC
+    'Army', 'Charlotte', 'East Carolina', 'FAU', 'Florida Atlantic', 'Memphis', 'Navy', 
+    'North Texas', 'Rice', 'South Florida', 'USF', 'Temple', 'Tulane', 'Tulsa', 'UAB', 'UTSA'
+  ],
+  '17': [ // Mountain West
+    'Air Force', 'Boise State', 'Boise St.', 'Colorado State', 'Colorado St.', 'Fresno State', 'Fresno St.', 'Hawaii', 
+    'Nevada', 'New Mexico', 'San Diego State', 'San Diego St.', 'San Jose State', 'San Jose St.', 'UNLV', 'Utah State', 'Utah St.', 'Wyoming'
+  ],
+  '18': [ // Sun Belt
+    'Appalachian State', 'Appalachian St.', 'Arkansas State', 'Arkansas St.', 'Coastal Carolina', 'Georgia Southern', 
+    'Georgia State', 'Georgia St.', 'James Madison', 'Louisiana Tech', 'Louisiana', 'Marshall', 
+    'Old Dominion', 'South Alabama', 'Southern Mississippi', 'Southern Miss', 'Texas State', 'Texas St.', 'Troy', 'UL Monroe'
+  ],
+  '20': [ // MAC
+    'Akron', 'Ball State', 'Ball St.', 'Bowling Green', 'Buffalo', 'Central Michigan', 
+    'Eastern Michigan', 'Kent State', 'Kent St.', 'Miami (OH)', 'Northern Illinois', 
+    'Ohio', 'Toledo', 'Western Michigan'
+  ]
+};
+
 function switchLeague(league) {
   currentLeague = league;
   
@@ -55,7 +97,6 @@ async function loadGames() {
     if (currentLeague === 'nfl') {
       fetchUrl = 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard';
     } else {
-      // Pull the full FBS slate so native conference IDs are fully available for filtering
       fetchUrl = `https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?limit=300&groups=80&v=${new Date().getTime()}`;
     }
 
@@ -66,26 +107,29 @@ async function loadGames() {
       events = data.events || [];
     }
 
-    // Filter events based on selected view using native API conference IDs and ranks
+    // Filter events based on selected view using strict dictionary matching
     if (currentLeague === 'cfb') {
       if (currentCfbGroup === '81') {
-        // Top 25 filter: Only show games containing at least one ranked team
         events = events.filter(event => {
           const competitors = event.competitions?.[0]?.competitors || [];
           return competitors.some(c => getRank(c) !== null);
         });
-      } else if (currentCfbGroup !== '80') {
-        // Specific conference filter using ESPN's native team.conferenceId property
-        const targetGroupId = parseInt(currentCfbGroup, 10);
+      } else if (currentCfbGroup !== '80' && conferenceTeams[currentCfbGroup]) {
+        const allowedTeams = conferenceTeams[currentCfbGroup];
         events = events.filter(event => {
           const competitors = event.competitions?.[0]?.competitors || [];
           return competitors.some(c => {
-            const teamConferenceId = parseInt(c.team?.conferenceId, 10);
-            return teamConferenceId === targetGroupId;
+            const teamName = (c.team?.name || '').toLowerCase();
+            const displayName = (c.team?.displayName || '').toLowerCase();
+            const shortDisplayName = (c.team?.shortDisplayName || '').toLowerCase();
+            
+            return allowedTeams.some(t => {
+              const target = t.toLowerCase();
+              return teamName === target || displayName === target || shortDisplayName === target;
+            });
           });
         });
       }
-      // If currentCfbGroup === '80' (All FBS), all fetched games pass through.
     }
 
     if (events.length === 0) {
