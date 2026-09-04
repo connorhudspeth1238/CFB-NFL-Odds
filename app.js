@@ -4,18 +4,15 @@ let currentCfbGroup = '80'; // Default to All FBS Scores
 function switchLeague(league) {
   currentLeague = league;
   
-  // Toggle Active Tab Styles
   document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
   const activeBtn = document.getElementById(`tab-${league}`);
   if (activeBtn) activeBtn.classList.add('active');
 
-  // Toggle CFB Dropdown Visibility
   const filterContainer = document.getElementById('cfb-filter-container');
   if (filterContainer) {
     filterContainer.style.display = league === 'cfb' ? 'block' : 'none';
   }
 
-  // Update Title
   const titleEl = document.getElementById('page-title');
   if (titleEl) {
     titleEl.innerText = league === 'cfb' ? 'College Football Scoreboard' : 'NFL Scoreboard';
@@ -35,41 +32,50 @@ async function loadGames() {
 
   container.innerHTML = `<p style="text-align: center; font-size: 1.1rem; color: #666;">Loading ${currentLeague.toUpperCase()} games...</p>`;
 
-  let dataFile = 'nfl.json';
-  if (currentLeague === 'cfb') {
-    // If Top 25 (81) is selected, fetch the full cfb.json payload to avoid ESPN's endpoint truncation
-    dataFile = (currentCfbGroup === '80' || currentCfbGroup === '81') ? 'cfb.json' : `cfb-${currentCfbGroup}.json`;
-  }
+  let events = [];
 
-  try {
-    const response = await fetch(`${dataFile}?v=${new Date().getTime()}`);
+  // Parse Rank from all known ESPN schema locations
+  const getRank = (competitor) => {
+    if (!competitor) return null;
     
-    if (!response.ok) {
-      throw new Error(`Data fetch failed (${response.status})`);
+    let rank = competitor.curatedRank?.current 
+            || competitor.curatedRank 
+            || competitor.ranks?.[0]?.current 
+            || competitor.team?.ranks?.[0]?.current
+            || competitor.rank;
+
+    if (typeof rank === 'object' && rank !== null) {
+      rank = rank.current || rank.rank;
     }
 
-    const data = await response.json();
-    let events = data.events || [];
+    const num = parseInt(rank, 10);
+    return (!isNaN(num) && num > 0 && num <= 25) ? num : null;
+  };
 
-    // Helper: Extract valid 1-25 rank from all possible ESPN schema paths
-    const getRank = (competitor) => {
-      if (!competitor) return null;
+  try {
+    // 1. Try loading static local JSON file first
+    let dataFile = currentLeague === 'nfl' ? 'nfl.json' : 'cfb.json';
+    let response = await fetch(`${dataFile}?v=${new Date().getTime()}`);
+    
+    if (response.ok) {
+      const data = await response.json();
+      events = data.events || [];
+    }
+
+    // 2. Live API Fallback: If local static file is missing or empty, fetch directly from ESPN Live API
+    if (!events.length) {
+      const apiUrl = currentLeague === 'nfl' 
+        ? 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?limit=300'
+        : 'https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=80&limit=300';
       
-      let rank = competitor.curatedRank?.current 
-              || competitor.curatedRank 
-              || competitor.ranks?.[0]?.current 
-              || competitor.team?.ranks?.[0]?.current
-              || competitor.rank;
-
-      if (typeof rank === 'object' && rank !== null) {
-        rank = rank.current || rank.rank;
+      const liveRes = await fetch(apiUrl);
+      if (liveRes.ok) {
+        const liveData = await liveRes.json();
+        events = liveData.events || [];
       }
+    }
 
-      const num = parseInt(rank, 10);
-      return (!isNaN(num) && num > 0 && num <= 25) ? num : null;
-    };
-
-    // STRICT TOP 25 FILTER: Keep game ONLY if at least one team is ranked 1-25
+    // Filter strictly for Top 25 games when selected
     if (currentLeague === 'cfb' && currentCfbGroup === '81') {
       events = events.filter(event => {
         const competitors = event.competitions?.[0]?.competitors || [];
@@ -78,7 +84,7 @@ async function loadGames() {
     }
 
     if (events.length === 0) {
-      container.innerHTML = `<p style="text-align: center; font-size: 1.1rem; color: #666; margin-top: 20px;">No Top 25 games found for this slate.</p>`;
+      container.innerHTML = `<p style="text-align: center; font-size: 1.1rem; color: #666; margin-top: 20px;">No games available for this selection.</p>`;
       return;
     }
 
@@ -88,7 +94,7 @@ async function loadGames() {
       return state === 'post' || completed === true;
     };
 
-    // Sort: Live/Upcoming first, Finished at bottom
+    // Sort: Upcoming/Live first, Finished games at the bottom
     events.sort((a, b) => {
       const aDone = isGameFinished(a);
       const bDone = isGameFinished(b);
@@ -170,9 +176,8 @@ async function loadGames() {
 
   } catch (error) {
     console.error('Failed to load scoreboard data:', error);
-    container.innerHTML = `<p style="color: red; text-align: center;">Unable to load ${currentLeague.toUpperCase()} game data.</p>`;
+    container.innerHTML = `<p style="color: red; text-align: center;">Unable to load scoreboard data.</p>`;
   }
 }
 
-// Initial Load
 document.addEventListener('DOMContentLoaded', loadGames);
