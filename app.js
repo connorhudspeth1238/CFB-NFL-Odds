@@ -2,8 +2,11 @@ async function loadGames() {
   const container = document.getElementById('scoreboard-grid');
 
   try {
-    // ESPN public endpoint for FBS college football odds & schedule
-    const response = await fetch('https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard');
+    // groups=80 fetches all FBS games; limit=300 ensures no games are cut off by pagination
+    const espnUrl = 'https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=80&limit=300';
+    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(espnUrl)}`;
+
+    const response = await fetch(proxyUrl);
     
     if (!response.ok) {
       throw new Error(`HTTP Error: ${response.status}`);
@@ -13,7 +16,7 @@ async function loadGames() {
     const events = data.events || [];
 
     if (events.length === 0) {
-      container.innerHTML = '<p>No games found for this week.</p>';
+      container.innerHTML = '<p style="text-align: center;">No FBS games scheduled for this week.</p>';
       return;
     }
 
@@ -22,15 +25,15 @@ async function loadGames() {
       const homeTeam = competition.competitors.find(c => c.homeAway === 'home');
       const awayTeam = competition.competitors.find(c => c.homeAway === 'away');
       
-      // Extract TV broadcast name
+      // Extract TV broadcast network
       const broadcast = competition.broadcasts?.[0]?.names?.[0] || 'TV TBD';
       
-      // Extract betting details
+      // Extract betting odds and spread
       const odds = competition.odds?.[0];
-      const spread = odds?.details || 'N/A';
+      const spread = odds?.details || 'Line: N/A';
       const overUnder = odds?.overUnder ? `O/U ${odds.overUnder}` : '';
 
-      // Format game time
+      // Format kickoff time
       const gameDate = new Date(event.date).toLocaleString([], {
         weekday: 'short', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit'
       });
