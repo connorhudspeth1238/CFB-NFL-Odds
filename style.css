@@ -38,6 +38,33 @@ header button {
   font-weight: 600;
 }
 
+/* Navigation Tabs Styling */
+.tabs-container {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.tab-btn {
+  padding: 10px 20px;
+  border: 1px solid #0070f3;
+  background-color: #fff;
+  color: #0070f3;
+  font-weight: 700;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-btn.active {
+  background-color: #0070f3;
+  color: #fff;
+}
+
+.tab-btn:hover {
+  opacity: 0.85;
+}
+
 /* 2-Column Responsive Scoreboard Grid */
 .scoreboard-grid {
   display: grid;
