@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>College Football Odds & TV Schedule</title>
-  <link rel="stylesheet" href="style.css">
+  <!-- Link with versioning parameter to bypass cached styles -->
+  <link rel="stylesheet" href="style.css?v=2">
 </head>
 <body>
 
@@ -13,10 +14,9 @@
     <button onclick="window.print()">Print / Save PDF</button>
   </header>
 
-  <!-- JavaScript will inject all game cards inside this empty container -->
+  <!-- Container populated by app.js -->
   <div id="scoreboard-grid" class="scoreboard-grid"></div>
 
-  <!-- Links your app.js logic to the HTML -->
   <script src="app.js"></script>
 </body>
 </html>
