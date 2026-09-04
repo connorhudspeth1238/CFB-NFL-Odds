@@ -80,10 +80,12 @@ header button {
 }
 
 /* Constrains Oversized Logo Dimensions */
-.logo {
-  width: 32px;
-  height: 32px;
-  object-fit: contain;
+.logo, img {
+  max-width: 32px !important;
+  max-height: 32px !important;
+  width: 32px !important;
+  height: 32px !important;
+  object-fit: contain !important;
   margin-right: 10px;
   flex-shrink: 0;
 }
@@ -130,19 +132,21 @@ header button {
 
   .scoreboard-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* Forces two columns per page */
+    grid-template-columns: 1fr 1fr;
     gap: 8px;
   }
 
   .game-card {
     border: 1px solid #999;
     box-shadow: none;
-    page-break-inside: avoid; /* Prevents splitting a card across page breaks */
+    page-break-inside: avoid;
     padding: 6px 8px;
   }
 
-  .logo {
-    width: 24px;
-    height: 24px;
+  .logo, img {
+    max-width: 24px !important;
+    max-height: 24px !important;
+    width: 24px !important;
+    height: 24px !important;
   }
 }
