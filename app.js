@@ -72,7 +72,7 @@ async function loadGames() {
   const container = document.getElementById('scoreboard-grid');
   if (!container) return;
 
-  container.innerHTML = `<p style="text-align: center; font-size: 1.1rem; color: #666;">Loading ${currentLeague.toUpperCase()} games...</p>`;
+  container.innerHTML = `<p style="text-align: center; font-size: 1.1rem; color: #666; grid-column: 1 / -1;">Loading live ${currentLeague.toUpperCase()} games...</p>`;
 
   let events = [];
 
@@ -93,8 +93,12 @@ async function loadGames() {
   };
 
   try {
-    const dataFile = currentLeague === 'nfl' ? 'nfl.json' : 'cfb.json';
-    const response = await fetch(`${dataFile}?v=${new Date().getTime()}`);
+    // Fetch live data directly from ESPN public endpoints
+    let fetchUrl = currentLeague === 'nfl' 
+      ? 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard' 
+      : `https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?limit=150&v=${new Date().getTime()}`;
+
+    const response = await fetch(fetchUrl);
     
     if (response.ok) {
       const data = await response.json();
@@ -127,7 +131,7 @@ async function loadGames() {
     }
 
     if (events.length === 0) {
-      container.innerHTML = `<p style="text-align: center; font-size: 1.1rem; color: #666; margin-top: 20px;">No games found for this selection.</p>`;
+      container.innerHTML = `<p style="text-align: center; font-size: 1.1rem; color: #666; margin-top: 20px; grid-column: 1 / -1;">No games found for this selection.</p>`;
       return;
     }
 
@@ -185,29 +189,29 @@ async function loadGames() {
         : `<span class="record" style="font-size: 0.85rem; color: #666;">${awayTeam.records?.[0]?.summary || ''}</span>`;
 
       return `
-        <div class="game-card ${finished ? 'completed-card' : ''}" style="border: 1px solid #e5e7eb; padding: 12px; margin-bottom: 12px; border-radius: 8px; ${finished ? 'opacity: 0.8; background-color: #fafafa;' : 'background-color: #fff;'}">
-          <div class="time-tv" style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.85rem;">
+        <div class="game-card ${finished ? 'completed-card' : ''}">
+          <div class="time-tv">
             <span class="time" style="${finished ? 'color: #d97706; font-weight: 700;' : 'color: #374151;'}">${statusText}</span>
-            <span class="tv-badge" style="background: #e0e7ff; color: #3730a3; padding: 2px 6px; border-radius: 4px;">${broadcast}</span>
+            <span class="tv-badge">${broadcast}</span>
           </div>
           
-          <div class="team home" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+          <div class="team home" style="margin-bottom: 6px;">
             <div style="display: flex; align-items: center; gap: 8px;">
-              <img src="${homeTeam.team?.logo || ''}" alt="" class="logo" style="width: 28px; height: 28px; object-fit: contain;">
-              <span class="team-name" style="font-weight: 600;">${homeName}</span>
+              <img src="${homeTeam.team?.logo || ''}" alt="" class="logo">
+              <span class="team-name">${homeName}</span>
             </div>
             ${homeDisplay}
           </div>
 
-          <div class="team away" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+          <div class="team away" style="margin-bottom: 8px;">
             <div style="display: flex; align-items: center; gap: 8px;">
-              <img src="${awayTeam.team?.logo || ''}" alt="" class="logo" style="width: 28px; height: 28px; object-fit: contain;">
-              <span class="team-name" style="font-weight: 600;">${awayName}</span>
+              <img src="${awayTeam.team?.logo || ''}" alt="" class="logo">
+              <span class="team-name">${awayName}</span>
             </div>
             ${awayDisplay}
           </div>
 
-          <div class="odds-bar" style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #6b7280; border-top: 1px solid #f3f4f6; padding-top: 6px;">
+          <div class="odds-bar">
             <span>${finished ? 'Final Score' : `Odds: ${spread}`}</span>
             <span>${finished ? '' : overUnder}</span>
           </div>
@@ -217,7 +221,7 @@ async function loadGames() {
 
   } catch (error) {
     console.error('Failed to load scoreboard data:', error);
-    container.innerHTML = `<p style="color: red; text-align: center;">Unable to load scoreboard data.</p>`;
+    container.innerHTML = `<p style="color: red; text-align: center; grid-column: 1 / -1;">Unable to load live scoreboard data.</p>`;
   }
 }
 
