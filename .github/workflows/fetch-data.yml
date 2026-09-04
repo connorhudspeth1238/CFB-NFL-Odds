@@ -17,11 +17,22 @@ jobs:
       - name: Fetch CFB and NFL Data
         run: |
           curl -s "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=80&limit=300" -o cfb.json
+          curl -s "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=81&limit=300" -o cfb-81.json
+          curl -s "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=1&limit=300" -o cfb-1.json
+          curl -s "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=4&limit=300" -o cfb-4.json
+          curl -s "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=5&limit=300" -o cfb-5.json
+          curl -s "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=9&limit=300" -o cfb-9.json
+          curl -s "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=12&limit=300" -o cfb-12.json
+          curl -s "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=15&limit=300" -o cfb-15.json
+          curl -s "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=17&limit=300" -o cfb-17.json
+          curl -s "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=18&limit=300" -o cfb-18.json
+          curl -s "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=37&limit=300" -o cfb-37.json
+          curl -s "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=20&limit=300" -o cfb-20.json
           curl -s "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?limit=300" -o nfl.json
 
       - name: Commit & Push JSON
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add cfb.json nfl.json
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Auto-update CFB & NFL scores data" && git push)
+          git add *.json
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Auto-update ESPN scores data" && git push)
