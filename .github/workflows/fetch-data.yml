@@ -16,14 +16,13 @@ jobs:
 
       - name: Fetch CFB and NFL Data
         run: |
-          # Fetch full active week data across all FBS teams (groups=80)
-          curl -s "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=80&limit=300" -o cfb.json
-          curl -s "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=81&limit=300" -o cfb-81.json
-          curl -s "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?limit=300" -o nfl.json
+          # Download FBS and NFL schedules with speed optimizations and strict timeouts
+          curl -s --connect-timeout 10 --max-time 30 "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=80&limit=150" -o cfb.json
+          curl -s --connect-timeout 10 --max-time 30 "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?limit=50" -o nfl.json
 
       - name: Commit & Push JSON
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add *.json
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Fetch full week CFB data" && git push)
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Optimize CFB data fetch" && git push)
