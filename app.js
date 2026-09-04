@@ -5,18 +5,18 @@ let currentCfbGroup = '81'; // Default to Top 25
 const conferenceTeams = {
   '8': [ // SEC
     'Alabama', 'Arkansas', 'Auburn', 'Florida', 'Georgia', 'Kentucky', 
-    'LSU', 'Mississippi State', 'Missouri', 'Oklahoma', 'Ole Miss', 
+    'LSU', 'Mississippi St.', 'Missouri', 'Oklahoma', 'Ole Miss', 
     'South Carolina', 'Tennessee', 'Texas', 'Texas A&M', 'Vanderbilt'
   ],
   '4': [ // Big Ten
-    'Illinois', 'Indiana', 'Iowa', 'Maryland', 'Michigan', 'Michigan State', 
+    'Illinois', 'Indiana', 'Iowa', 'Maryland', 'Michigan', 'Michigan St.', 
     'Minnesota', 'Nebraska', 'Northwestern', 'Ohio State', 'Oregon', 
     'Penn State', 'Purdue', 'Rutgers', 'UCLA', 'USC', 'Washington', 'Wisconsin'
   ],
   '12': [ // Big 12
-    'Arizona', 'Arizona State', 'Baylor', 'BYU', 'UCF', 'Cincinnati', 
-    'Colorado', 'Houston', 'Iowa State', 'Kansas', 'Kansas State', 
-    'Oklahoma State', 'TCU', 'Texas Tech', 'Utah', 'West Virginia'
+    'Arizona', 'Arizona St.', 'Baylor', 'BYU', 'UCF', 'Cincinnati', 
+    'Colorado', 'Houston', 'Iowa State', 'Kansas', 'Kansas St.', 
+    'Oklahoma St.', 'TCU', 'Texas Tech', 'Utah', 'West Virginia'
   ],
   '1': [ // ACC
     'Boston College', 'California', 'Clemson', 'Duke', 'Florida State', 
