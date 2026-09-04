@@ -25,7 +25,7 @@ const conferenceTeams = {
   ],
   '15': [ // AAC
     'Army', 'Charlotte', 'East Carolina', 'FAU', 'Memphis', 'Navy', 
-    'North Texas', 'Rice', '1337', 'South Florida', 'Temple', 'Tulane', 'Tulsa', 'UAB', 'UTSA'
+    'North Texas', 'Rice', 'South Florida', 'Temple', 'Tulane', 'Tulsa', 'UAB', 'UTSA'
   ],
   '17': [ // Mountain West
     'Air Force', 'Boise State', 'Colorado State', 'Fresno State', 'Hawaii', 
@@ -101,16 +101,13 @@ async function loadGames() {
       events = data.events || [];
     }
 
-    // Filter CFB games securely based on user selection
     if (currentLeague === 'cfb') {
       if (currentCfbGroup === '81') {
-        // TOP 25: Matchups featuring at least one ranked team
         events = events.filter(event => {
           const competitors = event.competitions?.[0]?.competitors || [];
           return competitors.some(c => getRank(c) !== null);
         });
       } else if (currentCfbGroup !== '80' && conferenceTeams[currentCfbGroup]) {
-        // CONFERENCE FILTER: Keep game if AT LEAST ONE team matches the conference school list exactly
         const allowedTeams = conferenceTeams[currentCfbGroup];
         events = events.filter(event => {
           const competitors = event.competitions?.[0]?.competitors || [];
@@ -204,7 +201,7 @@ async function loadGames() {
 
           <div class="team away" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
             <div style="display: flex; align-items: center; gap: 8px;">
-              <img src="${awayTeam.team?.logo| ''}" alt="" class="logo" style="width: 28px; height: 28px; object-fit: contain;">
+              <img src="${awayTeam.team?.logo || ''}" alt="" class="logo" style="width: 28px; height: 28px; object-fit: contain;">
               <span class="team-name" style="font-weight: 600;">${awayName}</span>
             </div>
             ${awayDisplay}
