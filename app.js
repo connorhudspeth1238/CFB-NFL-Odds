@@ -34,7 +34,7 @@ async function loadGames() {
 
   let events = [];
 
-  // Parse Rank from all known ESPN schema locations
+  // Helper: Extract valid 1-25 rank
   const getRank = (competitor) => {
     if (!competitor) return null;
     
@@ -53,38 +53,36 @@ async function loadGames() {
   };
 
   try {
-    // 1. Try loading static local JSON file first
-    let dataFile = currentLeague === 'nfl' ? 'nfl.json' : 'cfb.json';
-    let response = await fetch(`${dataFile}?v=${new Date().getTime()}`);
+    const dataFile = currentLeague === 'nfl' ? 'nfl.json' : 'cfb.json';
+    const response = await fetch(`${dataFile}?v=${new Date().getTime()}`);
     
     if (response.ok) {
       const data = await response.json();
       events = data.events || [];
     }
 
-    // 2. Live API Fallback: If local static file is missing or empty, fetch directly from ESPN Live API
-    if (!events.length) {
-      const apiUrl = currentLeague === 'nfl' 
-        ? 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?limit=300'
-        : 'https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=80&limit=300';
-      
-      const liveRes = await fetch(apiUrl);
-      if (liveRes.ok) {
-        const liveData = await liveRes.json();
-        events = liveData.events || [];
+    // Client-side filtering for CFB groups/conferences
+    if (currentLeague === 'cfb') {
+      if (currentCfbGroup === '81') {
+        // TOP 25: Matchups featuring at least one ranked team
+        events = events.filter(event => {
+          const competitors = event.competitions?.[0]?.competitors || [];
+          return competitors.some(c => getRank(c) !== null);
+        });
+      } else if (currentCfbGroup !== '80') {
+        // SPECIFIC CONFERENCES (e.g. SEC=8, ACC=1, Big Ten=4, Big 12=12, Pac-12=9, etc.)
+        events = events.filter(event => {
+          const competitors = event.competitions?.[0]?.competitors || [];
+          return competitors.some(c => {
+            const conferenceId = c.team?.conferenceId || c.team?.groups?.id;
+            return String(conferenceId) === String(currentCfbGroup);
+          });
+        });
       }
     }
 
-    // Filter strictly for Top 25 games when selected
-    if (currentLeague === 'cfb' && currentCfbGroup === '81') {
-      events = events.filter(event => {
-        const competitors = event.competitions?.[0]?.competitors || [];
-        return competitors.some(c => getRank(c) !== null);
-      });
-    }
-
     if (events.length === 0) {
-      container.innerHTML = `<p style="text-align: center; font-size: 1.1rem; color: #666; margin-top: 20px;">No games available for this selection.</p>`;
+      container.innerHTML = `<p style="text-align: center; font-size: 1.1rem; color: #666; margin-top: 20px;">No games found for this selection.</p>`;
       return;
     }
 
@@ -94,7 +92,7 @@ async function loadGames() {
       return state === 'post' || completed === true;
     };
 
-    // Sort: Upcoming/Live first, Finished games at the bottom
+    // Sort: Upcoming/Live first, Finished games at bottom
     events.sort((a, b) => {
       const aDone = isGameFinished(a);
       const bDone = isGameFinished(b);
