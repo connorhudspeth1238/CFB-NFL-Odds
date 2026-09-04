@@ -97,9 +97,8 @@ async function loadGames() {
     if (currentLeague === 'nfl') {
       fetchUrl = 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard';
     } else {
-      // Always pass groups=80 for All FBS (80) and Top 25 (81) to pull the full division slate
-      let groupParam = (currentCfbGroup === '81' || currentCfbGroup === '80') ? '80' : currentCfbGroup;
-      fetchUrl = `https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?limit=300&groups=${groupParam}&v=${new Date().getTime()}`;
+      // Always fetch the comprehensive FBS pool so client-side dictionary matching catches every conference game
+      fetchUrl = `https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?limit=300&groups=80&v=${new Date().getTime()}`;
     }
 
     const response = await fetch(fetchUrl);
@@ -109,16 +108,13 @@ async function loadGames() {
       events = data.events || [];
     }
 
-    // Filter events based on selected view
     if (currentLeague === 'cfb') {
       if (currentCfbGroup === '81') {
-        // Top 25 filter: Only show games containing at least one ranked team
         events = events.filter(event => {
           const competitors = event.competitions?.[0]?.competitors || [];
           return competitors.some(c => getRank(c) !== null);
         });
       } else if (currentCfbGroup !== '80' && conferenceTeams[currentCfbGroup]) {
-        // Specific conference filter
         const allowedTeams = conferenceTeams[currentCfbGroup];
         events = events.filter(event => {
           const competitors = event.competitions?.[0]?.competitors || [];
@@ -135,7 +131,6 @@ async function loadGames() {
           });
         });
       }
-      // Note: If currentCfbGroup === '80', no extra client-side filtering is applied, showing all fetched FBS games.
     }
 
     if (events.length === 0) {
