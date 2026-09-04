@@ -35,7 +35,6 @@ async function loadGames() {
 
   container.innerHTML = `<p style="text-align: center; font-size: 1.1rem; color: #666;">Loading ${currentLeague.toUpperCase()} games...</p>`;
 
-  // Load target group file with timestamp cache-buster
   let dataFile = 'nfl.json';
   if (currentLeague === 'cfb') {
     dataFile = currentCfbGroup === '80' ? 'cfb.json' : `cfb-${currentCfbGroup}.json`;
@@ -51,7 +50,7 @@ async function loadGames() {
     const data = await response.json();
     let events = data.events || [];
 
-    // Enhanced Rank Parser: Checks all ESPN schema locations for rank
+    // Helper: Extract valid 1-25 rank from team JSON structure
     const getRank = (competitor) => {
       if (!competitor) return null;
       
@@ -69,21 +68,16 @@ async function loadGames() {
       return (!isNaN(num) && num > 0 && num <= 25) ? num : null;
     };
 
-    // If Top 25 selected, ensure we keep games if EITHER team is ranked OR if loaded via cfb-81.json
+    // STRICT TOP 25 FILTER: Keep game ONLY if at least one team is ranked 1-25
     if (currentLeague === 'cfb' && currentCfbGroup === '81') {
-      const rankedEvents = events.filter(event => {
+      events = events.filter(event => {
         const competitors = event.competitions?.[0]?.competitors || [];
         return competitors.some(c => getRank(c) !== null);
       });
-
-      // Fallback: If strict ranking filter drops everything, display the full feed from cfb-81.json
-      if (rankedEvents.length > 0) {
-        events = rankedEvents;
-      }
     }
 
     if (events.length === 0) {
-      container.innerHTML = `<p style="text-align: center;">No games currently available for this selection.</p>`;
+      container.innerHTML = `<p style="text-align: center; font-size: 1.1rem; color: #666; margin-top: 20px;">No Top 25 games found for this slate.</p>`;
       return;
     }
 
@@ -128,12 +122,11 @@ async function loadGames() {
         statusText = event.status?.type?.detail || 'LIVE';
       }
 
-      // Format Team Names with Rank Badges
       const homeRank = getRank(homeTeam);
       const awayRank = getRank(awayTeam);
 
-      const homeName = `${homeRank ? `<span style="font-size: 0.8rem; color: #0070f3; font-weight: 800; margin-right: 4px;">(${homeRank})</span>` : ''}${homeTeam.team?.displayName || 'TBD'}`;
-      const awayName = `${awayRank ? `<span style="font-size: 0.8rem; color: #0070f3; font-weight: 800; margin-right: 4px;">(${awayRank})</span>` : ''}${awayTeam.team?.displayName || 'TBD'}`;
+      const homeName = `${homeRank ? `<span style="font-size: 0.85rem; color: #0070f3; font-weight: 800; margin-right: 4px;">(${homeRank})</span>` : ''}${homeTeam.team?.displayName || 'TBD'}`;
+      const awayName = `${awayRank ? `<span style="font-size: 0.85rem; color: #0070f3; font-weight: 800; margin-right: 4px;">(${awayRank})</span>` : ''}${awayTeam.team?.displayName || 'TBD'}`;
 
       const homeDisplay = (finished || inProgress)
         ? `<span class="score" style="font-weight: 800; font-size: 1.1rem; color: #000;">${homeTeam.score ?? 0}</span>`
