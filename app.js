@@ -1,6 +1,30 @@
 let currentLeague = 'cfb';
 let currentCfbGroup = '81'; // Default to Top 25
 
+// Official conference team mapping to reliably filter games client-side
+const conferenceTeams = {
+  '8': [ // SEC
+    'Alabama', 'Arkansas', 'Auburn', 'Florida', 'Georgia', 'Kentucky', 
+    'LSU', 'Mississippi State', 'Missouri', 'Oklahoma', 'Ole Miss', 
+    'South Carolina', 'Tennessee', 'Texas', 'Texas A&M', 'Vanderbilt'
+  ],
+  '4': [ // Big Ten
+    'Illinois', 'Indiana', 'Iowa', 'Maryland', 'Michigan', 'Michigan State', 
+    'Minnesota', 'Nebraska', 'Northwestern', 'Ohio State', 'Oregon', 
+    'Penn State', 'Purdue', 'Rutgers', 'UCLA', 'USC', 'Washington', 'Wisconsin'
+  ],
+  '12': [ // Big 12
+    'Arizona', 'Arizona State', 'Baylor', 'BYU', 'UCF', 'Cincinnati', 
+    'Colorado', 'Houston', 'Iowa State', 'Kansas', 'Kansas State', 
+    'Oklahoma State', 'TCU', 'Texas Tech', 'Utah', 'West Virginia'
+  ],
+  '1': [ // ACC
+    'Boston College', 'California', 'Clemson', 'Duke', 'Florida State', 
+    'Georgia Tech', 'Louisville', 'Miami', 'North Carolina', 'NC State', 
+    'Pittsburgh', 'SMU', 'Stanford', 'Syracuse', 'Virginia', 'Virginia Tech', 'Wake Forest'
+  ]
+};
+
 function switchLeague(league) {
   currentLeague = league;
   
@@ -34,10 +58,8 @@ async function loadGames() {
 
   let events = [];
 
-  // Helper: Extract valid 1-25 rank
   const getRank = (competitor) => {
     if (!competitor) return null;
-    
     let rank = competitor.curatedRank?.current 
             || competitor.curatedRank 
             || competitor.ranks?.[0]?.current 
@@ -52,29 +74,6 @@ async function loadGames() {
     return (!isNaN(num) && num > 0 && num <= 25) ? num : null;
   };
 
-  // Helper: Safely extract conference/group IDs from ESPN team payload
-  const hasConferenceId = (competitor, targetGroupId) => {
-    if (!competitor || !competitor.team) return false;
-    const team = competitor.team;
-    const target = String(targetGroupId);
-
-    // Check primary conferenceId property
-    if (team.conferenceId && String(team.conferenceId) === target) return true;
-
-    // Check groups object or array
-    if (team.groups) {
-      if (Array.isArray(team.groups)) {
-        return team.groups.some(g => String(g.id || g) === target);
-      } else if (typeof team.groups === 'object') {
-        if (String(team.groups.id) === target) return true;
-      } else if (String(team.groups) === target) {
-        return true;
-      }
-    }
-
-    return false;
-  };
-
   try {
     const dataFile = currentLeague === 'nfl' ? 'nfl.json' : 'cfb.json';
     const response = await fetch(`${dataFile}?v=${new Date().getTime()}`);
@@ -87,16 +86,20 @@ async function loadGames() {
     // Filter CFB Games
     if (currentLeague === 'cfb') {
       if (currentCfbGroup === '81') {
-        // TOP 25 FILTER: Keep games with at least one team ranked 1-25
+        // TOP 25: Keep games featuring at least one ranked team
         events = events.filter(event => {
           const competitors = event.competitions?.[0]?.competitors || [];
           return competitors.some(c => getRank(c) !== null);
         });
-      } else if (currentCfbGroup !== '80') {
-        // SPECIFIC CONFERENCE FILTER: Keep game if home OR away team belongs to conference
+      } else if (currentCfbGroup !== '80' && conferenceTeams[currentCfbGroup]) {
+        // CONFERENCE FILTER: Keep game if home or away team matches conference list
+        const allowedTeams = conferenceTeams[currentCfbGroup];
         events = events.filter(event => {
           const competitors = event.competitions?.[0]?.competitors || [];
-          return competitors.some(c => hasConferenceId(c, currentCfbGroup));
+          return competitors.some(c => {
+            const name = c.team?.displayName || c.team?.name || '';
+            return allowedTeams.some(t => name.includes(t));
+          });
         });
       }
     }
@@ -112,7 +115,6 @@ async function loadGames() {
       return state === 'post' || completed === true;
     };
 
-    // Sort: Upcoming/Live first, Finished games at bottom
     events.sort((a, b) => {
       const aDone = isGameFinished(a);
       const bDone = isGameFinished(b);
@@ -132,7 +134,6 @@ async function loadGames() {
       const inProgress = event.status?.type?.state === 'in';
 
       const broadcast = competition.broadcasts?.[0]?.names?.[0] || 'TV TBD';
-      
       const odds = competition.odds?.[0];
       const spread = odds?.details || 'Line: N/A';
       const overUnder = odds?.overUnder ? `O/U ${odds.overUnder}` : '';
