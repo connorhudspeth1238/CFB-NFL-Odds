@@ -3,14 +3,18 @@ let currentLeague = 'cfb';
 function switchLeague(league) {
   currentLeague = league;
   
-  // Update Tab Button Styles
+  // Update Tab Active States
   document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-  document.getElementById(`tab-${league}`).classList.add('active');
+  const activeBtn = document.getElementById(`tab-${league}`);
+  if (activeBtn) activeBtn.classList.add('active');
 
-  // Update Page Title
-  document.getElementById('page-title').innerText = league === 'cfb' 
-    ? 'College Football Scoreboard' 
-    : 'NFL Scoreboard';
+  // Update Header Title
+  const titleEl = document.getElementById('page-title');
+  if (titleEl) {
+    titleEl.innerText = league === 'cfb' 
+      ? 'College Football Scoreboard' 
+      : 'NFL Scoreboard';
+  }
 
   loadGames();
 }
@@ -42,7 +46,7 @@ async function loadGames() {
       return state === 'post' || completed === true;
     };
 
-    // Sort: Upcoming/Live games at the top, Completed games at the bottom
+    // Sort: Upcoming/Live first, Finished at bottom
     events.sort((a, b) => {
       const aDone = isGameFinished(a);
       const bDone = isGameFinished(b);
@@ -53,9 +57,10 @@ async function loadGames() {
     });
 
     container.innerHTML = events.map(event => {
-      const competition = event.competitions[0];
-      const homeTeam = competition.competitors.find(c => c.homeAway === 'home');
-      const awayTeam = competition.competitors.find(c => c.homeAway === 'away');
+      const competition = event.competitions?.[0] || {};
+      const competitors = competition.competitors || [];
+      const homeTeam = competitors.find(c => c.homeAway === 'home') || {};
+      const awayTeam = competitors.find(c => c.homeAway === 'away') || {};
       
       const finished = isGameFinished(event);
       const inProgress = event.status?.type?.state === 'in';
@@ -92,17 +97,17 @@ async function loadGames() {
           </div>
           
           <div class="team home">
-            <img src="${homeTeam.team.logo || ''}" alt="${homeTeam.team.displayName}" class="logo" style="width: 32px; height: 32px; object-fit: contain;">
+            <img src="${homeTeam.team?.logo || ''}" alt="${homeTeam.team?.displayName || 'Home'}" class="logo" style="width: 32px; height: 32px; object-fit: contain;">
             <div class="team-details">
-              <span class="team-name">${homeTeam.team.displayName}</span>
+              <span class="team-name">${homeTeam.team?.displayName || 'TBD'}</span>
             </div>
             ${homeDisplay}
           </div>
 
           <div class="team away">
-            <img src="${awayTeam.team.logo || ''}" alt="${awayTeam.team.displayName}" class="logo" style="width: 32px; height: 32px; object-fit: contain;">
+            <img src="${awayTeam.team?.logo || ''}" alt="${awayTeam.team?.displayName || 'Away'}" class="logo" style="width: 32px; height: 32px; object-fit: contain;">
             <div class="team-details">
-              <span class="team-name">${awayTeam.team.displayName}</span>
+              <span class="team-name">${awayTeam.team?.displayName || 'TBD'}</span>
             </div>
             ${awayDisplay}
           </div>
