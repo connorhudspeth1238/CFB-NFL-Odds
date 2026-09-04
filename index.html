@@ -19,7 +19,7 @@
     }
 
     .container {
-      max-width: 1000px;
+      max-width: 1200px;
       margin: 0 auto;
     }
 
@@ -80,7 +80,7 @@
 
     .scoreboard-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
       gap: 16px;
     }
 
@@ -169,6 +169,7 @@
 
   <div class="container">
     <header>
+      <h1 id="page-title" style="font-size: 1.5rem; font-weight: 700; color: #111827;">College Football Scoreboard</h1>
       <div class="league-toggle">
         <button id="tab-cfb" class="tab-btn active" onclick="switchLeague('cfb')">College Football</button>
         <button id="tab-nfl" class="tab-btn" onclick="switchLeague('nfl')">NFL</button>
@@ -182,11 +183,9 @@
           <option value="4">Big Ten</option>
           <option value="12">Big 12</option>
           <option value="1">ACC</option>
-          <option value="9">Pac-12</option>
           <option value="15">AAC</option>
           <option value="17">Mountain West</option>
           <option value="18">Sun Belt</option>
-          <option value="37">C-USA</option>
           <option value="20">MAC</option>
         </select>
       </div>
