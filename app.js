@@ -40,7 +40,7 @@ async function loadGames() {
           </div>
           
           <div class="team home">
-            <img src="${homeTeam.team.logo || ''}" alt="${homeTeam.team.displayName}" class="logo">
+            <img src="${homeTeam.team.logo || ''}" alt="${homeTeam.team.displayName}" class="logo" style="width: 32px; height: 32px; object-fit: contain;">
             <div class="team-details">
               <span class="team-name">${homeTeam.team.displayName}</span>
             </div>
@@ -48,7 +48,7 @@ async function loadGames() {
           </div>
 
           <div class="team away">
-            <img src="${awayTeam.team.logo || ''}" alt="${awayTeam.team.displayName}" class="logo">
+            <img src="${awayTeam.team.logo || ''}" alt="${awayTeam.team.displayName}" class="logo" style="width: 32px; height: 32px; object-fit: contain;">
             <div class="team-details">
               <span class="team-name">${awayTeam.team.displayName}</span>
             </div>
