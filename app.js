@@ -1,10 +1,13 @@
 async function loadGames() {
   const container = document.getElementById('scoreboard-grid');
+  container.innerHTML = '<p style="text-align: center;">Loading FBS games...</p>';
 
   try {
-    // groups=80 fetches all FBS games; limit=300 ensures no games are cut off by pagination
+    // Target ESPN's FBS scoreboard
     const espnUrl = 'https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=80&limit=300';
-    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(espnUrl)}`;
+    
+    // Using api.allorigins.win as a reliable CORS proxy wrapper
+    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(espnUrl)}`;
 
     const response = await fetch(proxyUrl);
     
@@ -12,7 +15,9 @@ async function loadGames() {
       throw new Error(`HTTP Error: ${response.status}`);
     }
 
-    const data = await response.json();
+    const wrapperData = await response.json();
+    // Parse the raw JSON string returned inside allorigins wrapper
+    const data = JSON.parse(wrapperData.contents);
     const events = data.events || [];
 
     if (events.length === 0) {
@@ -25,15 +30,15 @@ async function loadGames() {
       const homeTeam = competition.competitors.find(c => c.homeAway === 'home');
       const awayTeam = competition.competitors.find(c => c.homeAway === 'away');
       
-      // Extract TV broadcast network
+      // Extract TV network
       const broadcast = competition.broadcasts?.[0]?.names?.[0] || 'TV TBD';
       
-      // Extract betting odds and spread
+      // Extract betting line & over/under
       const odds = competition.odds?.[0];
       const spread = odds?.details || 'Line: N/A';
       const overUnder = odds?.overUnder ? `O/U ${odds.overUnder}` : '';
 
-      // Format kickoff time
+      // Kickoff time
       const gameDate = new Date(event.date).toLocaleString([], {
         weekday: 'short', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit'
       });
@@ -46,7 +51,7 @@ async function loadGames() {
           </div>
           
           <div class="team home">
-            <img src="${homeTeam.team.logo}" alt="${homeTeam.team.displayName}" class="logo">
+            <img src="${homeTeam.team.logo || ''}" alt="${homeTeam.team.displayName}" class="logo">
             <div class="team-details">
               <span class="team-name">${homeTeam.team.displayName}</span>
             </div>
@@ -54,7 +59,7 @@ async function loadGames() {
           </div>
 
           <div class="team away">
-            <img src="${awayTeam.team.logo}" alt="${awayTeam.team.displayName}" class="logo">
+            <img src="${awayTeam.team.logo || ''}" alt="${awayTeam.team.displayName}" class="logo">
             <div class="team-details">
               <span class="team-name">${awayTeam.team.displayName}</span>
             </div>
@@ -71,7 +76,11 @@ async function loadGames() {
 
   } catch (error) {
     console.error('Failed to load scoreboard data:', error);
-    container.innerHTML = `<p style="color: red; text-align: center;">Unable to load game data. Check browser console for details.</p>`;
+    container.innerHTML = `
+      <div style="text-align: center; color: red;">
+        <p>Unable to load game data.</p>
+        <small>Error: ${error.message}</small>
+      </div>`;
   }
 }
 
