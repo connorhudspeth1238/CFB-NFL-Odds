@@ -1,20 +1,31 @@
 let currentLeague = 'cfb';
+let currentCfbGroup = '80'; // Default to All FBS Scores
 
 function switchLeague(league) {
   currentLeague = league;
   
-  // Toggle Active Button Styles
+  // Toggle Active Tab Styles
   document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
   const activeBtn = document.getElementById(`tab-${league}`);
   if (activeBtn) activeBtn.classList.add('active');
 
-  // Update Page Title
+  // Toggle CFB Dropdown Visibility
+  const filterContainer = document.getElementById('cfb-filter-container');
+  if (filterContainer) {
+    filterContainer.style.display = league === 'cfb' ? 'block' : 'none';
+  }
+
+  // Update Title
   const titleEl = document.getElementById('page-title');
   if (titleEl) {
     titleEl.innerText = league === 'cfb' ? 'College Football Scoreboard' : 'NFL Scoreboard';
   }
 
-  // Fetch New Data
+  loadGames();
+}
+
+function changeCfbGroup(groupId) {
+  currentCfbGroup = groupId;
   loadGames();
 }
 
@@ -24,7 +35,11 @@ async function loadGames() {
 
   container.innerHTML = `<p style="text-align: center; font-size: 1.1rem; color: #666;">Loading ${currentLeague.toUpperCase()} games...</p>`;
 
-  const dataFile = currentLeague === 'cfb' ? 'cfb.json' : 'nfl.json';
+  // Determine file to load
+  let dataFile = 'nfl.json';
+  if (currentLeague === 'cfb') {
+    dataFile = currentCfbGroup === '80' ? 'cfb.json' : `cfb-${currentCfbGroup}.json`;
+  }
 
   try {
     const response = await fetch(`${dataFile}?v=${new Date().getTime()}`);
@@ -37,7 +52,7 @@ async function loadGames() {
     let events = data.events || [];
 
     if (events.length === 0) {
-      container.innerHTML = `<p style="text-align: center;">No ${currentLeague.toUpperCase()} games currently available.</p>`;
+      container.innerHTML = `<p style="text-align: center;">No games currently available for this selection.</p>`;
       return;
     }
 
