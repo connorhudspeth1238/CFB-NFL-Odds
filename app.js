@@ -97,9 +97,14 @@ async function loadGames() {
     if (currentLeague === 'nfl') {
       fetchUrl = 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard';
     } else {
-      // Pull enough limit to capture all games, passing FBS group when appropriate
-      let groupParam = currentCfbGroup === '80' ? '' : '&groups=80';
-      fetchUrl = `https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?limit=200${groupParam}&v=${new Date().getTime()}`;
+      let groupParam = '';
+      if (currentCfbGroup === '81') {
+        groupParam = '&groups=80';
+      } else if (currentCfbGroup !== '80') {
+        groupParam = `&groups=${currentCfbGroup}`;
+      }
+      
+      fetchUrl = `https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?limit=300${groupParam}&v=${new Date().getTime()}`;
     }
 
     const response = await fetch(fetchUrl);
