@@ -1,6 +1,48 @@
 let currentLeague = 'cfb';
 let currentCfbGroup = '81'; // Default to Top 25
 
+// Complete and accurate conference team mapping
+const conferenceTeams = {
+  '8': [ // SEC
+    'Alabama', 'Arkansas', 'Auburn', 'Florida', 'Georgia', 'Kentucky', 
+    'LSU', 'Mississippi State', 'Missouri', 'Oklahoma', 'Ole Miss', 
+    'South Carolina', 'Tennessee', 'Texas', 'Texas A&M', 'Vanderbilt'
+  ],
+  '4': [ // Big Ten
+    'Illinois', 'Indiana', 'Iowa', 'Maryland', 'Michigan', 'Michigan State', 
+    'Minnesota', 'Nebraska', 'Northwestern', 'Ohio State', 'Oregon', 
+    'Penn State', 'Purdue', 'Rutgers', 'UCLA', 'USC', 'Washington', 'Wisconsin'
+  ],
+  '12': [ // Big 12
+    'Arizona', 'Arizona State', 'Baylor', 'BYU', 'UCF', 'Cincinnati', 
+    'Colorado', 'Houston', 'Iowa State', 'Kansas', 'Kansas State', 
+    'Oklahoma State', 'TCU', 'Texas Tech', 'Utah', 'West Virginia'
+  ],
+  '1': [ // ACC
+    'Boston College', 'California', 'Clemson', 'Duke', 'Florida State', 
+    'Georgia Tech', 'Louisville', 'Miami', 'North Carolina', 'NC State', 
+    'Pittsburgh', 'SMU', 'Stanford', 'Syracuse', 'Virginia', 'Virginia Tech', 'Wake Forest'
+  ],
+  '15': [ // AAC
+    'Army', 'Charlotte', 'East Carolina', 'FAU', 'Memphis', 'Navy', 
+    'North Texas', 'Rice', '1337', 'South Florida', 'Temple', 'Tulane', 'Tulsa', 'UAB', 'UTSA'
+  ],
+  '17': [ // Mountain West
+    'Air Force', 'Boise State', 'Colorado State', 'Fresno State', 'Hawaii', 
+    'Nevada', 'New Mexico', 'San Diego State', 'San Jose State', 'UNLV', 'Utah State', 'Wyoming'
+  ],
+  '18': [ // Sun Belt
+    'Appalachian State', 'Arkansas State', 'Coastal Carolina', 'Georgia Southern', 
+    'Georgia State', 'James Madison', 'Louisiana', 'Louisiana Tech', 'Marshall', 
+    'Old Dominion', 'South Alabama', 'Southern Miss', 'Texas State', 'Troy', 'UL Monroe'
+  ],
+  '20': [ // MAC
+    'Akron', 'Ball State', 'Bowling Green', 'Buffalo', 'Central Michigan', 
+    'Eastern Michigan', 'Kent State', 'Miami (OH)', 'Northern Illinois', 
+    'Ohio', 'Toledo', 'Western Michigan'
+  ]
+};
+
 function switchLeague(league) {
   currentLeague = league;
   
@@ -51,32 +93,40 @@ async function loadGames() {
   };
 
   try {
-    let fetchUrl = '';
-
-    if (currentLeague === 'nfl') {
-      fetchUrl = 'nfl.json';
-    } else {
-      // If All FBS (80) or Top 25 (81), use the local GitHub-fetched cfb.json
-      if (currentCfbGroup === '80' || currentCfbGroup === '81') {
-        fetchUrl = `cfb.json?v=${new Date().getTime()}`;
-      } else {
-        // For specific conferences, query ESPN's group endpoint directly
-        fetchUrl = `https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=${currentCfbGroup}&limit=150`;
-      }
-    }
-
-    const response = await fetch(fetchUrl);
+    const dataFile = currentLeague === 'nfl' ? 'nfl.json' : 'cfb.json';
+    const response = await fetch(`${dataFile}?v=${new Date().getTime()}`);
+    
     if (response.ok) {
       const data = await response.json();
       events = data.events || [];
     }
 
-    // If Top 25 is selected, filter the events to only show ranked matchups
-    if (currentLeague === 'cfb' && currentCfbGroup === '81') {
-      events = events.filter(event => {
-        const competitors = event.competitions?.[0]?.competitors || [];
-        return competitors.some(c => getRank(c) !== null);
-      });
+    // Filter CFB games securely based on user selection
+    if (currentLeague === 'cfb') {
+      if (currentCfbGroup === '81') {
+        // TOP 25: Matchups featuring at least one ranked team
+        events = events.filter(event => {
+          const competitors = event.competitions?.[0]?.competitors || [];
+          return competitors.some(c => getRank(c) !== null);
+        });
+      } else if (currentCfbGroup !== '80' && conferenceTeams[currentCfbGroup]) {
+        // CONFERENCE FILTER: Keep game if AT LEAST ONE team matches the conference school list exactly
+        const allowedTeams = conferenceTeams[currentCfbGroup];
+        events = events.filter(event => {
+          const competitors = event.competitions?.[0]?.competitors || [];
+          return competitors.some(c => {
+            const teamName = c.team?.name || '';
+            const displayName = c.team?.displayName || '';
+            const shortDisplayName = c.team?.shortDisplayName || '';
+            
+            return allowedTeams.some(t => 
+              teamName.toLowerCase() === t.toLowerCase() || 
+              displayName.toLowerCase() === t.toLowerCase() ||
+              shortDisplayName.toLowerCase() === t.toLowerCase()
+            );
+          });
+        });
+      }
     }
 
     if (events.length === 0) {
@@ -149,15 +199,15 @@ async function loadGames() {
               <img src="${homeTeam.team?.logo || ''}" alt="" class="logo" style="width: 28px; height: 28px; object-fit: contain;">
               <span class="team-name" style="font-weight: 600;">${homeName}</span>
             </div>
-            <div class="score-record">${homeDisplay}</div>
+            ${homeDisplay}
           </div>
 
           <div class="team away" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
             <div style="display: flex; align-items: center; gap: 8px;">
-              <img src="${awayTeam.team?.logo || ''}" alt="" class="logo" style="width: 28px; height: 28px; object-fit: contain;">
+              <img src="${awayTeam.team?.logo| ''}" alt="" class="logo" style="width: 28px; height: 28px; object-fit: contain;">
               <span class="team-name" style="font-weight: 600;">${awayName}</span>
             </div>
-            <div class="score-record">${awayDisplay}</div>
+            ${awayDisplay}
           </div>
 
           <div class="odds-bar" style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #6b7280; border-top: 1px solid #f3f4f6; padding-top: 6px;">
