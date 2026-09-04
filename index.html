@@ -3,20 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>College Football Odds & TV Schedule</title>
-  <!-- Link with versioning parameter to bypass cached styles -->
-  <link rel="stylesheet" href="style.css?v=2">
+  <title>Football Odds & TV Schedule</title>
+  <link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
 
   <header class="no-print">
-    <h1>College Football Scoreboard</h1>
+    <h1 id="page-title">College Football Scoreboard</h1>
     <button onclick="window.print()">Print / Save PDF</button>
   </header>
 
-  <!-- Container populated by app.js -->
+  <!-- Navigation Tabs -->
+  <div class="tabs-container no-print">
+    <button class="tab-btn active" id="tab-cfb" onclick="switchLeague('cfb')">College Football</button>
+    <button class="tab-btn" id="tab-nfl" onclick="switchLeague('nfl')">NFL</button>
+  </div>
+
+  <!-- Scoreboard Grid -->
   <div id="scoreboard-grid" class="scoreboard-grid"></div>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=3"></script>
 </body>
 </html>
