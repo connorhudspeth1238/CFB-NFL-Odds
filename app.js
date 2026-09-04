@@ -35,10 +35,10 @@ async function loadGames() {
 
   container.innerHTML = `<p style="text-align: center; font-size: 1.1rem; color: #666;">Loading ${currentLeague.toUpperCase()} games...</p>`;
 
-  // Determine file to load
+  // Load target group file
   let dataFile = 'nfl.json';
   if (currentLeague === 'cfb') {
-    dataFile = (currentCfbGroup === '80' || currentCfbGroup === '81') ? 'cfb.json' : `cfb-${currentCfbGroup}.json`;
+    dataFile = currentCfbGroup === '80' ? 'cfb.json' : `cfb-${currentCfbGroup}.json`;
   }
 
   try {
@@ -51,24 +51,22 @@ async function loadGames() {
     const data = await response.json();
     let events = data.events || [];
 
-    // Helper to extract numerical ranking (1-25)
-    const getRank = (competitor) => {
-      const rank = competitor.curatedRank?.current;
-      return (rank && rank <= 25) ? rank : null;
-    };
-
-    // Filter Top 25 explicitly if selected
-    if (currentLeague === 'cfb' && currentCfbGroup === '81') {
-      events = events.filter(event => {
-        const competitors = event.competitions?.[0]?.competitors || [];
-        return competitors.some(c => getRank(c) !== null);
-      });
-    }
-
     if (events.length === 0) {
       container.innerHTML = `<p style="text-align: center;">No games currently available for this selection.</p>`;
       return;
     }
+
+    // Comprehensive rank parser across ESPN API structure variations
+    const getRank = (competitor) => {
+      if (!competitor) return null;
+      let rank = competitor.curatedRank?.current 
+              || competitor.curatedRank 
+              || competitor.ranks?.[0]?.current 
+              || competitor.rank;
+      
+      const num = parseInt(rank, 10);
+      return (!isNaN(num) && num > 0 && num <= 25) ? num : null;
+    };
 
     const isGameFinished = (event) => {
       const state = event.status?.type?.state;
@@ -76,7 +74,7 @@ async function loadGames() {
       return state === 'post' || completed === true;
     };
 
-    // Sort: Upcoming/Live first, Finished at bottom
+    // Sort: Live/Upcoming first, Finished at bottom
     events.sort((a, b) => {
       const aDone = isGameFinished(a);
       const bDone = isGameFinished(b);
@@ -111,12 +109,12 @@ async function loadGames() {
         statusText = event.status?.type?.detail || 'LIVE';
       }
 
-      // Format team names with rank badges
+      // Format Team Names with Rank Badges
       const homeRank = getRank(homeTeam);
       const awayRank = getRank(awayTeam);
 
-      const homeName = `${homeRank ? `<span style="font-size: 0.75rem; color: #0070f3; font-weight: 800; margin-right: 4px;">(${homeRank})</span>` : ''}${homeTeam.team?.displayName || 'TBD'}`;
-      const awayName = `${awayRank ? `<span style="font-size: 0.75rem; color: #0070f3; font-weight: 800; margin-right: 4px;">(${awayRank})</span>` : ''}${awayTeam.team?.displayName || 'TBD'}`;
+      const homeName = `${homeRank ? `<span style="font-size: 0.8rem; color: #0070f3; font-weight: 800; margin-right: 4px;">(${homeRank})</span>` : ''}${homeTeam.team?.displayName || 'TBD'}`;
+      const awayName = `${awayRank ? `<span style="font-size: 0.8rem; color: #0070f3; font-weight: 800; margin-right: 4px;">(${awayRank})</span>` : ''}${awayTeam.team?.displayName || 'TBD'}`;
 
       const homeDisplay = (finished || inProgress)
         ? `<span class="score" style="font-weight: 800; font-size: 1.1rem; color: #000;">${homeTeam.score ?? 0}</span>`
