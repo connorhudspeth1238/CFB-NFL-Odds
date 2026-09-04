@@ -16,30 +16,23 @@ jobs:
 
       - name: Fetch CFB and NFL Data
         run: |
-          # Calculate a 7-day date range (yesterday through 5 days ahead) in YYYYMMDD format
-          START_DATE=$(date -d "1 day ago" +%Y%m%d)
-          END_DATE=$(date -d "5 days" +%Y%m%d)
-          DATE_RANGE="${START_DATE}-${END_DATE}"
-
-          echo "Fetching ESPN data for date range: ${DATE_RANGE}"
-
-          curl -s "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=80&dates=${DATE_RANGE}&limit=300" -o cfb.json
-          curl -s "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=81&dates=${DATE_RANGE}&limit=300" -o cfb-81.json
-          curl -s "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=1&dates=${DATE_RANGE}&limit=300" -o cfb-1.json
-          curl -s "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=4&dates=${DATE_RANGE}&limit=300" -o cfb-4.json
-          curl -s "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=5&dates=${DATE_RANGE}&limit=300" -o cfb-5.json
-          curl -s "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=9&dates=${DATE_RANGE}&limit=300" -o cfb-9.json
-          curl -s "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=12&dates=${DATE_RANGE}&limit=300" -o cfb-12.json
-          curl -s "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=15&dates=${DATE_RANGE}&limit=300" -o cfb-15.json
-          curl -s "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=17&dates=${DATE_RANGE}&limit=300" -o cfb-17.json
-          curl -s "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=18&dates=${DATE_RANGE}&limit=300" -o cfb-18.json
-          curl -s "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=37&dates=${DATE_RANGE}&limit=300" -o cfb-37.json
-          curl -s "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=20&dates=${DATE_RANGE}&limit=300" -o cfb-20.json
-          curl -s "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=${DATE_RANGE}&limit=300" -o nfl.json
+          curl -s "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=80&limit=1000" -o cfb.json
+          curl -s "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=81&limit=1000" -o cfb-81.json
+          curl -s "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=1&limit=1000" -o cfb-1.json
+          curl -s "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=4&limit=1000" -o cfb-4.json
+          curl -s "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=5&limit=1000" -o cfb-5.json
+          curl -s "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=9&limit=1000" -o cfb-9.json
+          curl -s "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=12&limit=1000" -o cfb-12.json
+          curl -s "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=15&limit=1000" -o cfb-15.json
+          curl -s "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=17&limit=1000" -o cfb-17.json
+          curl -s "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=18&limit=1000" -o cfb-18.json
+          curl -s "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=37&limit=1000" -o cfb-37.json
+          curl -s "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=20&limit=1000" -o cfb-20.json
+          curl -s "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?limit=1000" -o nfl.json
 
       - name: Commit & Push JSON
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add *.json
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Auto-update ESPN scores data with date range" && git push)
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Increase ESPN API limit to capture full weekend slate" && git push)
