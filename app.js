@@ -1,9 +1,28 @@
+let currentLeague = 'cfb';
+
+function switchLeague(league) {
+  currentLeague = league;
+  
+  // Update Tab Button Styles
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.getElementById(`tab-${league}`).classList.add('active');
+
+  // Update Page Title
+  document.getElementById('page-title').innerText = league === 'cfb' 
+    ? 'College Football Scoreboard' 
+    : 'NFL Scoreboard';
+
+  loadGames();
+}
+
 async function loadGames() {
   const container = document.getElementById('scoreboard-grid');
-  container.innerHTML = '<p style="text-align: center;">Loading FBS games...</p>';
+  container.innerHTML = '<p style="text-align: center;">Loading games...</p>';
+
+  const dataFile = currentLeague === 'cfb' ? 'cfb.json' : 'nfl.json';
 
   try {
-    const response = await fetch('data.json?v=' + new Date().getTime());
+    const response = await fetch(`${dataFile}?v=${new Date().getTime()}`);
     
     if (!response.ok) {
       throw new Error(`Data fetch failed (${response.status})`);
@@ -13,11 +32,10 @@ async function loadGames() {
     let events = data.events || [];
 
     if (events.length === 0) {
-      container.innerHTML = '<p style="text-align: center;">No FBS games scheduled for this week.</p>';
+      container.innerHTML = `<p style="text-align: center;">No ${currentLeague.toUpperCase()} games scheduled for this week.</p>`;
       return;
     }
 
-    // Helper function to check if a game is finished
     const isGameFinished = (event) => {
       const state = event.status?.type?.state;
       const completed = event.status?.type?.completed;
@@ -29,9 +47,9 @@ async function loadGames() {
       const aDone = isGameFinished(a);
       const bDone = isGameFinished(b);
 
-      if (aDone && !bDone) return 1;  // Move finished 'a' to bottom
-      if (!aDone && bDone) return -1; // Keep upcoming 'a' at top
-      return new Date(a.date) - new Date(b.date); // Sort chronologically within groups
+      if (aDone && !bDone) return 1;
+      if (!aDone && bDone) return -1;
+      return new Date(a.date) - new Date(b.date);
     });
 
     container.innerHTML = events.map(event => {
@@ -42,15 +60,12 @@ async function loadGames() {
       const finished = isGameFinished(event);
       const inProgress = event.status?.type?.state === 'in';
 
-      // Extract TV broadcast network
       const broadcast = competition.broadcasts?.[0]?.names?.[0] || 'TV TBD';
       
-      // Extract betting odds and spread
       const odds = competition.odds?.[0];
       const spread = odds?.details || 'Line: N/A';
       const overUnder = odds?.overUnder ? `O/U ${odds.overUnder}` : '';
 
-      // Set header status text
       let statusText = new Date(event.date).toLocaleString([], {
         weekday: 'short', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit'
       });
@@ -61,7 +76,6 @@ async function loadGames() {
         statusText = event.status?.type?.detail || 'LIVE';
       }
 
-      // Display Scores if finished/in-progress; otherwise display Records
       const homeDisplay = (finished || inProgress)
         ? `<span class="score" style="font-weight: 800; font-size: 1.1rem; color: #000;">${homeTeam.score ?? 0}</span>`
         : `<span class="record">${homeTeam.records?.[0]?.summary || ''}</span>`;
@@ -103,7 +117,7 @@ async function loadGames() {
 
   } catch (error) {
     console.error('Failed to load scoreboard data:', error);
-    container.innerHTML = `<p style="color: red; text-align: center;">Unable to load game data.</p>`;
+    container.innerHTML = `<p style="color: red; text-align: center;">Unable to load ${currentLeague.toUpperCase()} game data.</p>`;
   }
 }
 
