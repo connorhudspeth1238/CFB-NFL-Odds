@@ -107,7 +107,7 @@ async function loadGames() {
       events = data.events || [];
     }
 
-    // Filter events based on selected view using strict dictionary matching
+    // Filter events based on selected view using inclusive substring matching
     if (currentLeague === 'cfb') {
       if (currentCfbGroup === '81') {
         events = events.filter(event => {
@@ -125,7 +125,7 @@ async function loadGames() {
             
             return allowedTeams.some(t => {
               const target = t.toLowerCase();
-              return teamName === target || displayName === target || shortDisplayName === target;
+              return teamName.includes(target) || displayName.includes(target) || shortDisplayName.includes(target);
             });
           });
         });
