@@ -1,7 +1,7 @@
 let currentLeague = 'cfb';
 let currentCfbGroup = '81'; // Default to Top 25
 
-// Official conference team mapping to reliably filter games client-side
+// Complete and accurate conference team mapping
 const conferenceTeams = {
   '8': [ // SEC
     'Alabama', 'Arkansas', 'Auburn', 'Florida', 'Georgia', 'Kentucky', 
@@ -101,22 +101,26 @@ async function loadGames() {
       events = data.events || [];
     }
 
-    // Filter CFB Games
     if (currentLeague === 'cfb') {
       if (currentCfbGroup === '81') {
-        // TOP 25: Keep games featuring at least one ranked team
         events = events.filter(event => {
           const competitors = event.competitions?.[0]?.competitors || [];
           return competitors.some(c => getRank(c) !== null);
         });
       } else if (currentCfbGroup !== '80' && conferenceTeams[currentCfbGroup]) {
-        // CONFERENCE FILTER: Keep game if home or away team matches conference list
         const allowedTeams = conferenceTeams[currentCfbGroup];
         events = events.filter(event => {
           const competitors = event.competitions?.[0]?.competitors || [];
           return competitors.some(c => {
-            const name = c.team?.displayName || c.team?.name || '';
-            return allowedTeams.some(t => name.includes(t));
+            const teamName = c.team?.name || '';
+            const displayName = c.team?.displayName || '';
+            const shortDisplayName = c.team?.shortDisplayName || '';
+            
+            return allowedTeams.some(t => 
+              teamName.toLowerCase() === t.toLowerCase() || 
+              displayName.toLowerCase() === t.toLowerCase() ||
+              shortDisplayName.toLowerCase() === t.toLowerCase()
+            );
           });
         });
       }
