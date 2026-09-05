@@ -1,5 +1,6 @@
 let currentLeague = 'cfb';
-let currentCfbGroup = '80'; // Default changed to All FBS
+let currentCfbGroup = '80'; // Default to All FBS
+let refreshInterval = null;
 
 // Complete and accurate conference team mapping
 const conferenceTeams = {
@@ -60,11 +61,23 @@ function switchLeague(league) {
     titleEl.innerText = league === 'cfb' ? 'College Football Scoreboard' : 'NFL Scoreboard';
   }
 
+  // Reset loading view immediately when switching tabs
+  const container = document.getElementById('scoreboard-grid');
+  if (container) {
+    container.innerHTML = `<p style="text-align: center; font-size: 1.1rem; color: #666; grid-column: 1 / -1;">Loading live ${currentLeague.toUpperCase()} games...</p>`;
+  }
+
   loadGames();
 }
 
 function changeCfbGroup(groupId) {
   currentCfbGroup = groupId;
+  
+  const container = document.getElementById('scoreboard-grid');
+  if (container) {
+    container.innerHTML = `<p style="text-align: center; font-size: 1.1rem; color: #666; grid-column: 1 / -1;">Loading live games...</p>`;
+  }
+
   loadGames();
 }
 
@@ -78,7 +91,11 @@ async function loadGames() {
     groupSelect.value = currentCfbGroup;
   }
 
-  container.innerHTML = `<p style="text-align: center; font-size: 1.1rem; color: #666; grid-column: 1 / -1;">Loading live ${currentLeague.toUpperCase()} games...</p>`;
+  // Only show the loading text if the container is totally empty or currently displaying a message
+  const isInitialLoad = container.querySelector('p') !== null;
+  if (isInitialLoad) {
+    container.innerHTML = `<p style="text-align: center; font-size: 1.1rem; color: #666; grid-column: 1 / -1;">Loading live ${currentLeague.toUpperCase()} games...</p>`;
+  }
 
   let events = [];
 
@@ -103,7 +120,6 @@ async function loadGames() {
     if (currentLeague === 'nfl') {
       fetchUrl = 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard';
     } else {
-      // Always fetch the comprehensive FBS pool so client-side dictionary matching catches every conference game
       fetchUrl = `https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?limit=300&groups=80&v=${new Date().getTime()}`;
     }
 
@@ -230,8 +246,17 @@ async function loadGames() {
 
   } catch (error) {
     console.error('Failed to load scoreboard data:', error);
-    container.innerHTML = `<p style="color: red; text-align: center; grid-column: 1 / -1;">Unable to load live scoreboard data.</p>`;
+    // Only show error text if we don't already have cards on screen (to avoid dropping old data on a transient network blip)
+    if (isInitialLoad) {
+      container.innerHTML = `<p style="color: red; text-align: center; grid-column: 1 / -1;">Unable to load live scoreboard data.</p>`;
+    }
   }
 }
 
-document.addEventListener('DOMContentLoaded', loadGames);
+document.addEventListener('DOMContentLoaded', () => {
+  loadGames();
+  
+  // Automatically poll ESPN for fresh scores every 30 seconds
+  if (refreshInterval) clearInterval(refreshInterval);
+  refreshInterval = setInterval(loadGames, 30000);
+});
