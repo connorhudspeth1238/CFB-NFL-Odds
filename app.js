@@ -1,5 +1,5 @@
 let currentLeague = 'cfb';
-let currentCfbGroup = '81'; // Default to Top 25
+let currentCfbGroup = '80'; // Default to All FBS
 
 // Clean, keyword-based conference dictionary mapped to core school identifiers
 const conferenceTeams = {
