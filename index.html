@@ -18,6 +18,42 @@
   <meta property="og:type" content="website">
 
   <style>
+    /* Light Mode Default Theme Colors */
+    :root {
+      --bg-color: #f3f4f6;
+      --card-bg: #ffffff;
+      --card-completed-bg: #fafafa;
+      --text-main: #111827;
+      --text-secondary: #6b7280;
+      --time-color: #374151;
+      --border-color: #e5e7eb;
+      --tv-bg: #e0e7ff;
+      --tv-text: #3730a3;
+      --select-bg: #ffffff;
+      --select-border: #d1d5db;
+      --select-text: #374151;
+      --toggle-bg: #e5e7eb;
+      --score-color: #000000;
+    }
+
+    /* Dark Mode Theme Colors (Matched to your reference photo) */
+    [data-theme="dark"] {
+      --bg-color: #13141c;
+      --card-bg: #1e202c;
+      --card-completed-bg: #191b24;
+      --text-main: #f3f4f6;
+      --text-secondary: #9ca3af;
+      --time-color: #e5e7eb;
+      --border-color: #2d3142;
+      --tv-bg: #2a2d3e;
+      --tv-text: #818cf8;
+      --select-bg: #1e202c;
+      --select-border: #2d3142;
+      --select-text: #f3f4f6;
+      --toggle-bg: #232533;
+      --score-color: #ffffff;
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -26,9 +62,10 @@
     }
 
     body {
-      background-color: #f3f4f6;
-      color: #111827;
+      background-color: var(--bg-color);
+      color: var(--text-main);
       padding: 20px;
+      transition: background-color 0.2s ease, color 0.2s ease;
     }
 
     .container {
@@ -42,14 +79,25 @@
       align-items: center;
       gap: 16px;
       margin-bottom: 24px;
+      position: relative;
+    }
+
+    /* Top Row controls for Toggles and Theme button */
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
     }
 
     .league-toggle {
       display: flex;
       gap: 8px;
-      background: #e5e7eb;
+      background: var(--toggle-bg);
       padding: 4px;
       border-radius: 8px;
+      transition: background-color 0.2s ease;
     }
 
     .tab-btn {
@@ -58,7 +106,7 @@
       background: transparent;
       font-weight: 600;
       font-size: 0.95rem;
-      color: #4b5563;
+      color: var(--text-secondary);
       cursor: pointer;
       border-radius: 6px;
       transition: all 0.2s ease;
@@ -70,6 +118,23 @@
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     }
 
+    /* Dark Mode Switcher Button Styling */
+    .theme-toggle-btn {
+      padding: 8px 14px;
+      border: 1px solid var(--select-border);
+      background: var(--select-bg);
+      color: var(--text-main);
+      font-weight: 600;
+      font-size: 0.9rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .theme-toggle-btn:hover {
+      border-color: #0070f3;
+    }
+
     .filter-container {
       margin-top: 4px;
     }
@@ -77,13 +142,14 @@
     select {
       padding: 8px 12px;
       border-radius: 6px;
-      border: 1px solid #d1d5db;
-      background-color: #ffffff;
+      border: 1px solid var(--select-border);
+      background-color: var(--select-bg);
       font-size: 0.9rem;
       font-weight: 500;
-      color: #374151;
+      color: var(--select-text);
       outline: none;
       cursor: pointer;
+      transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
     }
 
     select:focus {
@@ -98,16 +164,17 @@
     }
 
     .game-card {
-      border: 1px solid #e5e7eb;
+      border: 1px solid var(--border-color);
       padding: 14px;
       border-radius: 8px;
-      background-color: #ffffff;
+      background-color: var(--card-bg);
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      transition: background-color 0.2s ease, border-color 0.2s ease;
     }
 
     .game-card.completed-card {
       opacity: 0.85;
-      background-color: #fafafa;
+      background-color: var(--card-completed-bg);
     }
 
     .time-tv {
@@ -120,16 +187,17 @@
 
     .time {
       font-weight: 600;
-      color: #374151;
+      color: var(--time-color);
     }
 
     .tv-badge {
-      background: #e0e7ff;
-      color: #3730a3;
+      background: var(--tv-bg);
+      color: var(--tv-text);
       padding: 2px 8px;
       border-radius: 4px;
       font-size: 0.75rem;
       font-weight: 600;
+      transition: background-color 0.2s ease, color 0.2s ease;
     }
 
     .team {
@@ -148,12 +216,13 @@
     .team-name {
       font-weight: 600;
       font-size: 0.95rem;
+      color: var(--text-main);
     }
 
     .score {
       font-weight: 800;
       font-size: 1.1rem;
-      color: #000;
+      color: var(--score-color);
     }
 
     .score-record-container {
@@ -166,7 +235,7 @@
 
     .record {
       font-size: 0.85rem;
-      color: #6b7280;
+      color: var(--text-secondary);
       white-space: nowrap;
     }
 
@@ -174,10 +243,11 @@
       display: flex;
       justify-content: space-between;
       font-size: 0.8rem;
-      color: #6b7280;
-      border-top: 1px solid #f3f4f6;
+      color: var(--text-secondary);
+      border-top: 1px solid var(--border-color);
       padding-top: 8px;
       margin-top: 8px;
+      transition: border-color 0.2s ease;
     }
   </style>
 </head>
@@ -185,15 +255,21 @@
 
   <div class="container">
     <header>
-      <h1 id="page-title" style="font-size: 1.5rem; font-weight: 700; color: #111827;">College Football Scoreboard</h1>
-      <div class="league-toggle">
-        <button id="tab-cfb" class="tab-btn active" onclick="switchLeague('cfb')">College Football</button>
-        <button id="tab-nfl" class="tab-btn" onclick="switchLeague('nfl')">NFL</button>
+      <h1 id="page-title" style="font-size: 1.5rem; font-weight: 700; color: var(--text-main);">College Football Scoreboard</h1>
+      
+      <div class="header-controls">
+        <div class="league-toggle">
+          <button id="tab-cfb" class="tab-btn active" onclick="switchLeague('cfb')">College Football</button>
+          <button id="tab-nfl" class="tab-btn" onclick="switchLeague('nfl')">NFL</button>
+        </div>
+
+        <!-- Light/Dark Theme Switcher Button -->
+        <button id="theme-toggle-btn" class="theme-toggle-btn" onclick="toggleTheme()">🌙 Dark Mode</button>
       </div>
 
       <div id="cfb-filter-container" class="filter-container">
         <select id="cfb-group-select" onchange="changeCfbGroup(this.value)">
-          <option value="80" selected>All FBS</option> <!-- Default set here -->
+          <option value="80" selected>All FBS</option>
           <option value="81">Top 25</option>
           <option value="8">SEC</option>
           <option value="4">Big Ten</option>
@@ -213,5 +289,34 @@
   </div>
 
   <script src="app.js"></script>
+  <script>
+    // Simple inline script to handle theme switching and memory saving
+    function toggleTheme() {
+      const html = document.documentElement;
+      const btn = document.getElementById('theme-toggle-btn');
+      
+      if (html.getAttribute('data-theme') === 'dark') {
+        html.removeAttribute('data-theme');
+        btn.innerText = '🌙 Dark Mode';
+        localStorage.setItem('theme', 'light');
+      } else {
+        html.setAttribute('data-theme', 'dark');
+        btn.innerText = '☀️ Light Mode';
+        localStorage.setItem('theme', 'dark');
+      }
+    }
+
+    // Check user's saved preference on page load
+    (function() {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        document.addEventListener('DOMContentLoaded', () => {
+          const btn = document.getElementById('theme-toggle-btn');
+          if (btn) btn.innerText = '☀️ Light Mode';
+        });
+      }
+    })();
+  </script>
 </body>
 </html>
