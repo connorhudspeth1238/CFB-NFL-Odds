@@ -54,9 +54,15 @@
       --score-color: #ffffff;
     }
 
-    /* FORCED OVERRIDE: Directly target the time element in dark mode for maximum visibility */
+    /* Dark Mode Time & Final Game Overrides */
     [data-theme="dark"] .time {
-      color: #ffffff !important;
+      color: var(--text-secondary) !important;
+    }
+
+    /* Keep final/completed game status text gold in dark mode */
+    [data-theme="dark"] .time.final, 
+    [data-theme="dark"] .game-card.completed-card .time {
+      color: #f59e0b !important;
     }
 
     * {
