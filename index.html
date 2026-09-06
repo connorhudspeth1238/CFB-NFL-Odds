@@ -5,13 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CFB & NFL Scoreboard</title>
 
-  <!-- Browser Tab Icon (Football Favicon) -->
   <link rel="icon" type="image/x-icon" href="/CFB-NFL-Odds/favicon.ico">
 
-  <!-- iPhone Home Screen App Icon -->
   <link rel="apple-touch-icon" href="/CFB-NFL-Odds/icon.png">
 
-  <!-- Rich Link Previews for iMessage / Social Media -->
   <meta property="og:title" content="CFB & NFL Scoreboard">
   <meta property="og:description" content="Live scores, schedules, odds, and broadcast info for college football and the NFL.">
   <meta property="og:url" content="https://connorhudspeth1238.github.io/CFB-NFL-Odds/">
@@ -43,7 +40,7 @@
       --card-completed-bg: #191b24;
       --text-main: #f3f4f6;
       --text-secondary: #9ca3af;
-      --time-color: #9ca3af;
+      --time-color: #9ca3af; /* Brightened to match odds text */
       --border-color: #2d3142;
       --tv-bg: #2a2d3e;
       --tv-text: #818cf8;
@@ -187,7 +184,7 @@
 
     .time {
       font-weight: 600;
-      color: var(--time-color);
+      color: var(--time-color); /* Now pulls from explicit variable */
     }
 
     .tv-badge {
@@ -263,7 +260,6 @@
           <button id="tab-nfl" class="tab-btn" onclick="switchLeague('nfl')">NFL</button>
         </div>
 
-        <!-- Light/Dark Theme Switcher Button -->
         <button id="theme-toggle-btn" class="theme-toggle-btn" onclick="toggleTheme()">🌙 Dark Mode</button>
       </div>
 
@@ -284,8 +280,7 @@
     </header>
 
     <main id="scoreboard-grid" class="scoreboard-grid">
-      <!-- Games will render dynamically here -->
-    </main>
+      </main>
   </div>
 
   <script src="app.js"></script>
