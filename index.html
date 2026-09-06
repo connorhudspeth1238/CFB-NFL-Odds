@@ -4,6 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CFB & NFL Scoreboard</title>
+
+  <!-- Browser Tab Icon (Football Favicon) -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+
+  <!-- iPhone Home Screen App Icon -->
+  <link rel="apple-touch-icon" href="/icon.png">
+
+  <!-- Rich Link Previews for iMessage / Social Media -->
+  <meta property="og:title" content="CFB & NFL Scoreboard">
+  <meta property="og:description" content="Live scores, schedules, odds, and broadcast info for college football and the NFL.">
+  <meta property="og:url" content="https://connorhudspeth1238.github.io">
+  <meta property="og:type" content="website">
+
   <style>
     * {
       box-sizing: border-box;
@@ -180,8 +193,8 @@
 
       <div id="cfb-filter-container" class="filter-container">
         <select id="cfb-group-select" onchange="changeCfbGroup(this.value)">
-          <option value="80">All FBS</option>
-          <option value="81" selected>Top 25</option>
+          <option value="80" selected>All FBS</option> <!-- Default set here -->
+          <option value="81">Top 25</option>
           <option value="8">SEC</option>
           <option value="4">Big Ten</option>
           <option value="12">Big 12</option>
