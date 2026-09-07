@@ -220,20 +220,22 @@ async function loadGames() {
             <span class="tv-badge">${broadcast}</span>
           </div>
           
-          <div class="team home" style="margin-bottom: 6px;">
-            <div style="display: flex; align-items: center; gap: 8px; overflow: hidden; margin-right: 8px;">
-              <img src="${homeTeam.team?.logo || ''}" alt="" class="logo" style="flex-shrink: 0;">
-              <span class="team-name" style="overflow: hidden; text-overflow: ellipsis;">${homeName}</span>
-            </div>
-            <div class="score-record-container">${homeDisplay}</div>
-          </div>
-
-          <div class="team away" style="margin-bottom: 8px;">
+          <!-- Away Team (Top) -->
+          <div class="team away" style="margin-bottom: 6px;">
             <div style="display: flex; align-items: center; gap: 8px; overflow: hidden; margin-right: 8px;">
               <img src="${awayTeam.team?.logo || ''}" alt="" class="logo" style="flex-shrink: 0;">
               <span class="team-name" style="overflow: hidden; text-overflow: ellipsis;">${awayName}</span>
             </div>
             <div class="score-record-container">${awayDisplay}</div>
+          </div>
+
+          <!-- Home Team (Bottom) -->
+          <div class="team home" style="margin-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px; overflow: hidden; margin-right: 8px;">
+              <img src="${homeTeam.team?.logo || ''}" alt="" class="logo" style="flex-shrink: 0;">
+              <span class="team-name" style="overflow: hidden; text-overflow: ellipsis;">${homeName}</span>
+            </div>
+            <div class="score-record-container">${homeDisplay}</div>
           </div>
 
           <div class="odds-bar">
@@ -246,7 +248,6 @@ async function loadGames() {
 
   } catch (error) {
     console.error('Failed to load scoreboard data:', error);
-    // Only show error text if we don't already have cards on screen (to avoid dropping old data on a transient network blip)
     if (isInitialLoad) {
       container.innerHTML = `<p style="color: red; text-align: center; grid-column: 1 / -1;">Unable to load live scoreboard data.</p>`;
     }
@@ -256,7 +257,6 @@ async function loadGames() {
 document.addEventListener('DOMContentLoaded', () => {
   loadGames();
   
-  // Automatically poll ESPN for fresh scores every 30 seconds
   if (refreshInterval) clearInterval(refreshInterval);
   refreshInterval = setInterval(loadGames, 30000);
 });
