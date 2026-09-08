@@ -7,7 +7,7 @@ let allEventsCache = []; // Stores the currently loaded games for instant search
 const conferenceTeams = {
   '8': [ // SEC
     'Alabama', 'Arkansas', 'Auburn', 'Florida', 'Georgia', 'Kentucky', 
-    'LSU', 'Mississippi State', 'Mississippi St.', 'Missouri', 'Oklahoma', 'Ole Miss', 
+    'LSU', 'Mississippi State', 'Mississippi State Bulldogs', 'Missouri', 'Oklahoma', 'Ole Miss', 
     'South Carolina', 'Tennessee', 'Texas', 'Texas A&M', 'Vanderbilt'
   ],
   '4': [ // Big Ten
