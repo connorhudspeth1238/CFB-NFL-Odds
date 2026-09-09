@@ -326,8 +326,8 @@ function renderFilteredGames() {
         </div>
 
         <div class="odds-bar">
-          <span>${finished ? 'Final Score' : `Odds: ${spread}`}</span>
-          <span>${finished ? '' : overUnder}</span>
+          <span>Odds: ${spread}</span>
+          <span>${overUnder}</span>
         </div>
       </div>
     `;
