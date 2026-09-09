@@ -3,45 +3,67 @@ let currentCfbGroup = '80'; // Default to All FBS
 let refreshInterval = null;
 let allEventsCache = []; // Stores the currently loaded games for instant searching
 
-// Complete and accurate conference team mapping
+// Complete and accurate 10-conference team mapping using exact ESPN display names
 const conferenceTeams = {
   '8': [ // SEC
-    'Alabama', 'Arkansas', 'Auburn', 'Florida', 'Georgia', 'Kentucky', 
-    'LSU', 'Mississippi State', 'Mississippi State Bulldogs', 'Missouri', 'Oklahoma', 'Ole Miss', 
-    'South Carolina', 'Tennessee', 'Texas', 'Texas A&M', 'Vanderbilt'
+    'Alabama Crimson Tide', 'Arkansas Razorbacks', 'Auburn Tigers', 'Florida Gators', 
+    'Georgia Bulldogs', 'Kentucky Wildcats', 'LSU Tigers', 'Mississippi State Bulldogs', 
+    'Missouri Tigers', 'Oklahoma Sooners', 'Ole Miss Rebels', 'South Carolina Gamecocks', 
+    'Tennessee Volunteers', 'Texas Longhorns', 'Texas A&M Aggies', 'Vanderbilt Commodores'
   ],
   '4': [ // Big Ten
-    'Illinois', 'Indiana', 'Iowa', 'Maryland', 'Michigan', 'Michigan State', 'Michigan St.', 
-    'Minnesota', 'Nebraska', 'Northwestern', 'Ohio State', 'Oregon', 
-    'Penn State', 'Purdue', 'Rutgers', 'UCLA', 'USC', 'Washington', 'Wisconsin'
+    'Illinois Fighting Illini', 'Indiana Hoosiers', 'Iowa Hawkeyes', 'Maryland Terrapins', 
+    'Michigan Wolverines', 'Michigan State Spartans', 'Minnesota Golden Gophers', 
+    'Nebraska Cornhuskers', 'Northwestern Wildcats', 'Ohio State Buckeyes', 'Oregon Ducks', 
+    'Penn State Nittany Lions', 'Purdue Boilermakers', 'Rutgers Scarlet Knights', 
+    'UCLA Bruins', 'USC Trojans', 'Washington Huskies', 'Wisconsin Badgers'
   ],
   '12': [ // Big 12
-    'Arizona', 'Arizona State', 'Arizona St.', 'Baylor', 'BYU', 'UCF', 'Cincinnati', 
-    'Colorado', 'Houston', 'Iowa State', 'Iowa St.', 'Kansas', 'Kansas State', 'Kansas St.', 
-    'Oklahoma State', 'Oklahoma St.', 'TCU', 'Texas Tech', 'Utah', 'West Virginia'
+    'Arizona Wildcats', 'Arizona State Sun Devils', 'Baylor Bears', 'BYU Cougars', 
+    'UCF Knights', 'Cincinnati Bearcats', 'Colorado Buffaloes', 'Houston Cougars', 
+    'Iowa State Cyclones', 'Kansas Jayhawks', 'Kansas State Wildcats', 'Oklahoma State Cowboys', 
+    'TCU Horned Frogs', 'Texas Tech Red Raiders', 'Utah Utes', 'West Virginia Mountaineers'
   ],
   '1': [ // ACC
-    'Boston College', 'California', 'Clemson', 'Duke', 'Florida State', 'Florida St.', 
-    'Georgia Tech', 'Louisville', 'Miami', 'North Carolina', 'NC State', 
-    'Pittsburgh', 'SMU', 'Stanford', 'Syracuse', 'Virginia', 'Virginia Tech', 'Wake Forest'
+    'Boston College Eagles', 'California Golden Bears', 'Clemson Tigers', 'Duke Blue Devils', 
+    'Florida State Seminoles', 'Georgia Tech Yellow Jackets', 'Louisville Cardinals', 
+    'Miami Hurricanes', 'North Carolina Tar Heels', 'NC State Wolfpack', 'Pittsburgh Panthers', 
+    'SMU Mustangs', 'Stanford Cardinal', 'Syracuse Orange', 'Virginia Cavaliers', 
+    'Virginia Tech Hokies', 'Wake Forest Demon Deacons'
   ],
   '15': [ // AAC
-    'Army', 'Charlotte', 'East Carolina', 'FAU', 'Memphis', 'Navy', 
-    'North Texas', 'Rice', 'South Florida', 'Temple', 'Tulane', 'Tulsa', 'UAB', 'UTSA'
+    'Army Black Knights', 'Charlotte 49ers', 'East Carolina Pirates', 'Florida Atlantic Owls', 
+    'Memphis Tigers', 'Navy Midshipmen', 'North Texas Mean Green', 'Rice Owls', 
+    'South Florida Bulls', 'Temple Owls', 'Tulane Green Wave', 'Tulsa Golden Hurricane', 
+    'UAB Blazers', 'UTSA Roadrunners'
   ],
-  '17': [ // Mountain West
-    'Air Force', 'Boise State', 'Boise St.', 'Colorado State', 'Colorado St.', 'Fresno State', 'Fresno St.', 'Hawaii', 
-    'Nevada', 'New Mexico', 'San Diego State', 'San Diego St.', 'San Jose State', 'San Jose St.', 'UNLV', 'Utah State', 'Utah St.', 'Wyoming'
-  ],
-  '18': [ // Sun Belt
-    'Appalachian State', 'Appalachian St.', 'Arkansas State', 'Arkansas St.', 'Coastal Carolina', 'Georgia Southern', 
-    'Georgia State', 'Georgia St.', 'James Madison', 'Louisiana', 'Louisiana Tech', 'Marshall', 
-    'Old Dominion', 'South Alabama', 'Southern Miss', 'Southern Mississippi', 'Texas State', 'Texas St.', 'Troy', 'UL Monroe'
+  'cusa': [ // CUSA
+    'Delaware Blue Hens', 'Florida International Panthers', 'Jacksonville State Gamecocks', 
+    'Kennesaw State Owls', 'Liberty Flames', 'Middle Tennessee Blue Raiders', 
+    'Missouri State Bears', 'New Mexico State Aggies', 'Sam Houston Bearkats', 
+    'UTEP Miners', 'Western Kentucky Hilltoppers'
   ],
   '20': [ // MAC
-    'Akron', 'Ball State', 'Ball St.', 'Bowling Green', 'Buffalo', 'Central Michigan', 
-    'Eastern Michigan', 'Kent State', 'Kent St.', 'Miami (OH)', 'Northern Illinois', 
-    'Ohio', 'Toledo', 'Western Michigan'
+    'Akron Zips', 'Ball State Cardinals', 'Bowling Green Falcons', 'Buffalo Bulls', 
+    'Central Michigan Chippewas', 'Eastern Michigan Eagles', 'Kent State Golden Flashes', 
+    'Miami (OH) RedHawks', 'Northern Illinois Huskies', 'Ohio Bobcats', 'Toledo Rockets', 
+    'Massachusetts Minutemen', 'Western Michigan Broncos'
+  ],
+  '17': [ // Mountain West (MW)
+    'Air Force Falcons', 'Hawai\'i Rainbow Warriors', 'Nevada Wolf Pack', 'New Mexico Lobos', 
+    'San José State Spartans', 'UNLV Rebels', 'Wyoming Cowboys', 'North Dakota State Bison'
+  ],
+  'pac12': [ // Pac-12 (Updated Realignment)
+    'Oregon State Beavers', 'Washington State Cougars', 'Boise State Broncos', 
+    'Colorado State Rams', 'Fresno State Bulldogs', 'San Diego State Aztecs', 
+    'Utah State Aggies', 'Texas State Bobcats'
+  ],
+  '18': [ // Sun Belt
+    'App State Mountaineers', 'Arkansas State Red Wolves', 'Coastal Carolina Chanticleers', 
+    'Georgia Southern Eagles', 'Georgia State Panthers', 'James Madison Dukes', 
+    'Louisiana Ragin\' Cajuns', 'Louisiana Tech Bulldogs', 'Marshall Thundering Herd', 
+    'Old Dominion Monarchs', 'South Alabama Jaguars', 'Southern Miss Golden Eagles', 
+    'Troy Trojans', 'UL Monroe Warhawks'
   ]
 };
 
@@ -67,7 +89,6 @@ function switchLeague(league) {
     container.innerHTML = `<p style="text-align: center; font-size: 1.1rem; color: #666; grid-column: 1 / -1;">Loading live ${currentLeague.toUpperCase()} games...</p>`;
   }
 
-  // Clear search input on league switch if desired, or keep it
   loadGames();
 }
 
@@ -140,15 +161,8 @@ async function loadGames() {
         events = events.filter(event => {
           const competitors = event.competitions?.[0]?.competitors || [];
           return competitors.some(c => {
-            const teamName = c.team?.name || '';
             const displayName = c.team?.displayName || '';
-            const shortDisplayName = c.team?.shortDisplayName || '';
-            
-            return allowedTeams.some(t => 
-              teamName.toLowerCase() === t.toLowerCase() || 
-              displayName.toLowerCase() === t.toLowerCase() ||
-              shortDisplayName.toLowerCase() === t.toLowerCase()
-            );
+            return allowedTeams.some(t => displayName.toLowerCase() === t.toLowerCase());
           });
         });
       }
