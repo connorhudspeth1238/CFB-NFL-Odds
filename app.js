@@ -3,6 +3,9 @@ let currentCfbGroup = '80'; // Default to All FBS
 let refreshInterval = null;
 let allEventsCache = []; // Stores the currently loaded games for instant searching
 
+// Cache to remember the latest pregame odds before ESPN drops/clears them mid-game
+const persistentOddsCache = {};
+
 // Complete and accurate 10-conference team mapping using exact ESPN display names
 const conferenceTeams = {
   '8': [ // SEC
@@ -149,6 +152,19 @@ async function loadGames() {
       const data = await response.json();
       events = data.events || [];
     }
+
+    // Capture and cache odds dynamically up until kickoff; lock them in once live/cleared
+    events.forEach(event => {
+      const gameId = event.id;
+      const liveOdds = event.competitions?.[0]?.odds?.[0];
+
+      if (liveOdds && liveOdds.details) {
+        persistentOddsCache[gameId] = liveOdds;
+      } else if (persistentOddsCache[gameId]) {
+        if (!event.competitions[0].odds) event.competitions[0].odds = [];
+        event.competitions[0].odds[0] = persistentOddsCache[gameId];
+      }
+    });
 
     if (currentLeague === 'cfb') {
       if (currentCfbGroup === '81') {
