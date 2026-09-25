@@ -84,11 +84,7 @@ function switchLeague(league) {
 
   const titleEl = document.getElementById('page-title');
   if (titleEl) {
-    if (league === 'txhs') {
-      titleEl.innerText = 'Texas High School Scoreboard';
-    } else {
-      titleEl.innerText = league === 'cfb' ? 'College Football Scoreboard' : 'NFL Scoreboard';
-    }
+    titleEl.innerText = league === 'cfb' ? 'College Football Scoreboard' : 'NFL Scoreboard';
   }
 
   const container = document.getElementById('scoreboard-grid');
@@ -146,8 +142,6 @@ async function loadGames() {
     let fetchUrl = '';
     if (currentLeague === 'nfl') {
       fetchUrl = 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard';
-    } else if (currentLeague === 'txhs') {
-      fetchUrl = './txhs-scores.json?' + new Date().getTime();
     } else {
       fetchUrl = `https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?limit=300&groups=80&v=${new Date().getTime()}`;
     }
@@ -159,36 +153,34 @@ async function loadGames() {
       events = data.events || [];
     }
 
-    if (currentLeague !== 'txhs') {
-      // Capture and cache odds dynamically up until kickoff; lock them in once live/cleared
-      events.forEach(event => {
-        const gameId = event.id;
-        const liveOdds = event.competitions?.[0]?.odds?.[0];
+    // Capture and cache odds dynamically up until kickoff; lock them in once live/cleared
+    events.forEach(event => {
+      const gameId = event.id;
+      const liveOdds = event.competitions?.[0]?.odds?.[0];
 
-        if (liveOdds && liveOdds.details) {
-          persistentOddsCache[gameId] = liveOdds;
-        } else if (persistentOddsCache[gameId]) {
-          if (!event.competitions[0].odds) event.competitions[0].odds = [];
-          event.competitions[0].odds[0] = persistentOddsCache[gameId];
-        }
-      });
+      if (liveOdds && liveOdds.details) {
+        persistentOddsCache[gameId] = liveOdds;
+      } else if (persistentOddsCache[gameId]) {
+        if (!event.competitions[0].odds) event.competitions[0].odds = [];
+        event.competitions[0].odds[0] = persistentOddsCache[gameId];
+      }
+    });
 
-      if (currentLeague === 'cfb') {
-        if (currentCfbGroup === '81') {
-          events = events.filter(event => {
-            const competitors = event.competitions?.[0]?.competitors || [];
-            return competitors.some(c => getRank(c) !== null);
+    if (currentLeague === 'cfb') {
+      if (currentCfbGroup === '81') {
+        events = events.filter(event => {
+          const competitors = event.competitions?.[0]?.competitors || [];
+          return competitors.some(c => getRank(c) !== null);
+        });
+      } else if (currentCfbGroup !== '80' && conferenceTeams[currentCfbGroup]) {
+        const allowedTeams = conferenceTeams[currentCfbGroup];
+        events = events.filter(event => {
+          const competitors = event.competitions?.[0]?.competitors || [];
+          return competitors.some(c => {
+            const displayName = c.team?.displayName || '';
+            return allowedTeams.some(t => displayName.toLowerCase() === t.toLowerCase());
           });
-        } else if (currentCfbGroup !== '80' && conferenceTeams[currentCfbGroup]) {
-          const allowedTeams = conferenceTeams[currentCfbGroup];
-          events = events.filter(event => {
-            const competitors = event.competitions?.[0]?.competitors || [];
-            return competitors.some(c => {
-              const displayName = c.team?.displayName || '';
-              return allowedTeams.some(t => displayName.toLowerCase() === t.toLowerCase());
-            });
-          });
-        }
+        });
       }
     }
 
