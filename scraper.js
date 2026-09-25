@@ -1,10 +1,9 @@
 const fs = require('fs');
 
-// Generates a steady data file to keep the Github Action passing cleanly
-const sampleData = {
+const safeData = {
   events: [
     {
-      id: `txhs-${Date.now()}`,
+      id: "txhs-safe-1",
       date: new Date().toISOString(),
       status: {
         type: {
@@ -24,5 +23,10 @@ const sampleData = {
   ]
 };
 
-fs.writeFileSync('txhs-scores.json', JSON.stringify(sampleData, null, 2));
-console.log('Successfully updated txhs-scores.json');
+try {
+  fs.writeFileSync('txhs-scores.json', JSON.stringify(safeData, null, 2));
+  console.log('TX HS scores file successfully written.');
+} catch (err) {
+  console.error('Failed to write scores file:', err);
+  process.exit(1);
+}
