@@ -1,3 +1,90 @@
 {
-  "events": []
+  "events": [
+    {
+      "id": "txhs-1",
+      "date": "2026-09-25T19:00:00Z",
+      "status": {
+        "type": {
+          "state": "in",
+          "detail": "3rd Qtr"
+        }
+      },
+      "competitions": [
+        {
+          "competitors": [
+            {
+              "homeAway": "home",
+              "score": "28",
+              "team": {
+                "displayName": "Aledo",
+                "logo": ""
+              }
+            },
+            {
+              "homeAway": "away",
+              "score": "21",
+              "team": {
+                "displayName": "North Crowley",
+                "logo": ""
+              }
+            }
+          ],
+          "broadcasts": [
+            {
+              "names": ["NFHS Network"]
+            }
+          ],
+          "odds": [
+            {
+              "details": "High School Matchup",
+              "overUnder": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "txhs-2",
+      "date": "2026-09-25T19:00:00Z",
+      "status": {
+        "type": {
+          "state": "post",
+          "detail": "FINAL"
+        }
+      },
+      "competitions": [
+        {
+          "competitors": [
+            {
+              "homeAway": "home",
+              "score": "42",
+              "team": {
+                "displayName": "Duncanville",
+                "logo": ""
+              }
+            },
+            {
+              "homeAway": "away",
+              "score": "35",
+              "team": {
+                "displayName": "DeSoto",
+                "logo": ""
+              }
+            }
+          ],
+          "broadcasts": [
+            {
+              "names": ["TXHS Live"]
+            }
+          ],
+          "odds": [
+            {
+              "details": "Final Score",
+              "overUnder": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }
